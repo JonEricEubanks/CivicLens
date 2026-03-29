@@ -1,0 +1,46 @@
+{
+  "name": "civiclens",
+  "version": "1.0.0",
+  "description": "Municipal Intelligence Reporter — AI agent for civic infrastructure transparency",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "mcp": "node mcp-server/server.js",
+    "dev": "node --watch server.js",
+    "ingest": "node rag/ingest.js",
+    "build:css": "npx tailwindcss -i src/input.css -o public/styles.css --minify",
+    "copy:vendor": "node -e \"const{cpSync}=require('fs');cpSync('node_modules/marked/lib/marked.umd.js','public/vendor/marked.min.js');cpSync('node_modules/chart.js/dist/chart.umd.js','public/vendor/chart.js');cpSync('node_modules/leaflet/dist/leaflet.js','public/vendor/leaflet.js');cpSync('node_modules/leaflet/dist/leaflet.css','public/vendor/leaflet.css');cpSync('node_modules/leaflet/dist/images','public/vendor/images',{recursive:true});console.log('vendor assets copied')\"",
+    "build": "npm run build:css && npm run copy:vendor",
+    "lint": "node --check server.js mcp-server/server.js agent/pipeline.js agent/intent-agent.js agent/data-agent.js agent/synthesis-agent.js agent/report-agent.js agent/mcp-client.js scoring/weibull.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "langchain",
+    "ai-agent",
+    "civic-tech",
+    "municipal"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@azure/cosmos": "^4.9.2",
+    "@huggingface/transformers": "^3.8.1",
+    "@langchain/community": "^0.3.0",
+    "@langchain/core": "^0.3.0",
+    "@langchain/openai": "^0.3.0",
+    "chart.js": "^4.5.1",
+    "dompurify": "^3.3.3",
+    "dotenv": "^16.4.7",
+    "leaflet": "^1.9.4",
+    "marked": "^17.0.5",
+    "nodemailer": "^8.0.4",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

@@ -1,0 +1,192 @@
+[
+  {
+    "id": "PH-001",
+    "severity": 8,
+    "size_inches": 18,
+    "depth_inches": 4,
+    "location": {
+      "address": "700 N Western Ave",
+      "lat": 42.2567,
+      "lng": -87.8412,
+      "zone": "NW-3"
+    },
+    "reported_date": "2025-11-15",
+    "surface_type": "asphalt",
+    "traffic_volume": "high",
+    "near_school": true,
+    "school_name": "Lake Forest High School",
+    "school_distance_ft": 2833,
+    "work_order_id": "WO-2024-001"
+  },
+  {
+    "id": "PH-002",
+    "severity": 9,
+    "size_inches": 24,
+    "depth_inches": 5,
+    "location": {
+      "address": "901 N McKinley Rd",
+      "lat": 42.2598,
+      "lng": -87.8445,
+      "zone": "NW-3"
+    },
+    "reported_date": "2026-02-28",
+    "surface_type": "asphalt",
+    "traffic_volume": "medium",
+    "near_school": true,
+    "school_name": "Lake Forest High School",
+    "school_distance_ft": 2025,
+    "work_order_id": "WO-2024-005"
+  },
+  {
+    "id": "PH-003",
+    "severity": 5,
+    "size_inches": 10,
+    "depth_inches": 3,
+    "location": {
+      "address": "1100 S Waukegan Rd",
+      "lat": 42.2341,
+      "lng": -87.8378,
+      "zone": "SE-2"
+    },
+    "reported_date": "2026-01-20",
+    "surface_type": "asphalt",
+    "traffic_volume": "high",
+    "near_school": false,
+    "school_name": null,
+    "school_distance_ft": 3177,
+    "work_order_id": "WO-2024-003"
+  },
+  {
+    "id": "PH-004",
+    "severity": 7,
+    "size_inches": 20,
+    "depth_inches": 4,
+    "location": {
+      "address": "600 N Sheridan Rd",
+      "lat": 42.2554,
+      "lng": -87.8298,
+      "zone": "NE-1"
+    },
+    "reported_date": "2025-10-05",
+    "surface_type": "asphalt",
+    "traffic_volume": "high",
+    "near_school": true,
+    "school_name": "Lake Forest High School",
+    "school_distance_ft": 4366,
+    "work_order_id": "WO-2024-007"
+  },
+  {
+    "id": "PH-005",
+    "severity": 4,
+    "size_inches": 8,
+    "depth_inches": 2,
+    "location": {
+      "address": "500 W Spruce Ave",
+      "lat": 42.2523,
+      "lng": -87.8467,
+      "zone": "SW-1"
+    },
+    "reported_date": "2026-02-10",
+    "surface_type": "asphalt",
+    "traffic_volume": "low",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 1807,
+    "work_order_id": "WO-2024-010"
+  },
+  {
+    "id": "PH-006",
+    "severity": 6,
+    "size_inches": 14,
+    "depth_inches": 3,
+    "location": {
+      "address": "1200 N Western Ave",
+      "lat": 42.2612,
+      "lng": -87.8415,
+      "zone": "NW-3"
+    },
+    "reported_date": "2025-07-18",
+    "surface_type": "asphalt",
+    "traffic_volume": "high",
+    "near_school": true,
+    "school_name": "Lake Forest High School",
+    "school_distance_ft": 1221,
+    "work_order_id": "WO-2024-012"
+  },
+  {
+    "id": "PH-007",
+    "severity": 2,
+    "size_inches": 6,
+    "depth_inches": 2,
+    "location": {
+      "address": "155 S Ridge Rd",
+      "lat": 42.2445,
+      "lng": -87.8389,
+      "zone": "SE-2"
+    },
+    "reported_date": "2026-03-05",
+    "surface_type": "asphalt",
+    "traffic_volume": "low",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 3244,
+    "work_order_id": "WO-2024-014"
+  },
+  {
+    "id": "PH-008",
+    "severity": 6,
+    "size_inches": 12,
+    "depth_inches": 3,
+    "location": {
+      "address": "250 E Deerpath",
+      "lat": 42.2508,
+      "lng": -87.8348,
+      "zone": "NE-1"
+    },
+    "reported_date": "2026-03-10",
+    "surface_type": "asphalt",
+    "traffic_volume": "medium",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 4221,
+    "work_order_id": null
+  },
+  {
+    "id": "PH-009",
+    "severity": 7,
+    "size_inches": 16,
+    "depth_inches": 4,
+    "location": {
+      "address": "950 N Telegraph Rd",
+      "lat": 42.2589,
+      "lng": -87.8478,
+      "zone": "NW-3"
+    },
+    "reported_date": "2026-01-12",
+    "surface_type": "concrete",
+    "traffic_volume": "medium",
+    "near_school": true,
+    "school_name": "Lake Forest High School",
+    "school_distance_ft": 2844,
+    "work_order_id": null
+  },
+  {
+    "id": "PH-010",
+    "severity": 8,
+    "size_inches": 22,
+    "depth_inches": 5,
+    "location": {
+      "address": "400 E Illinois Rd",
+      "lat": 42.2491,
+      "lng": -87.8339,
+      "zone": "NE-1"
+    },
+    "reported_date": "2025-12-20",
+    "surface_type": "asphalt",
+    "traffic_volume": "high",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 4356,
+    "work_order_id": null
+  }
+]

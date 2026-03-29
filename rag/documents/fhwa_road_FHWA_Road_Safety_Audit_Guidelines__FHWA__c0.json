@@ -1,0 +1,11 @@
+{
+  "id": "fhwa_road_FHWA_Road_Safety_Audit_Guidelines__FHWA__c0",
+  "sourceId": "fhwa_road",
+  "category": "repair_standards",
+  "title": "FHWA Road Safety Audit Guidelines (FHWA-SA-06-06)",
+  "content": "Road Safety Audits (RSAs) are formal examinations of existing or future roads by an independent team. FHWA guidelines recommend RSAs for: high-crash locations, school zones, construction zones, pedestrian corridors, and ADA transition plan routes. RSA teams should include at least one certified traffic engineer and one local public works representative. Typical RSA findings for local roads: inadequate sight distance at intersections, missing pedestrian signals, non-ADA-compliant curb ramps, deteriorated pavement markings, and obstructed sidewalks. Post-RSA, agencies must document findings and track remediation within 90 days. School zone RSAs should be conducted before each school year and after significant construction.",
+  "url": "https://safety.fhwa.dot.gov/rsa/guidelines/",
+  "fetchedAt": "2026-03-28T15:17:27.539Z",
+  "chunkIndex": 0,
+  "totalChunks": 1
+}

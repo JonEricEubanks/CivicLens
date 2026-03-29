@@ -1,0 +1,632 @@
+[
+  {
+    "id": "SR-2026-001",
+    "resident_name": "Maria Garcia",
+    "contact_phone": "847-555-0142",
+    "category": "pothole",
+    "description": "Large pothole in the road right in front of my driveway. My car bottoms out every time I pull in. It's been getting worse since winter.",
+    "location": {
+      "address": "245 E Woodland Rd",
+      "zone": "NW-3",
+      "lat": 42.2587,
+      "lng": -87.8401
+    },
+    "status": "in_progress",
+    "priority": "high",
+    "submitted_date": "2026-02-15",
+    "updated_date": "2026-03-10",
+    "resolution_eta": "2026-03-25",
+    "assigned_crew": "Crew-B",
+    "updates": [
+      {
+        "date": "2026-02-15",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-02-18",
+        "note": "Inspected and confirmed — 18\" diameter, 4\" deep. Classified as high priority.",
+        "by": "Inspector Torres"
+      },
+      {
+        "date": "2026-03-10",
+        "note": "Crew-B assigned. Repair scheduled for week of March 23.",
+        "by": "Dispatch"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-002",
+    "resident_name": "James Wilson",
+    "contact_phone": "847-555-0287",
+    "category": "sidewalk",
+    "description": "The sidewalk in front of 310 Vine has a big crack and the concrete is raised about 2 inches. My daughter tripped on it walking to school last week.",
+    "location": {
+      "address": "310 N Vine Ave",
+      "zone": "NE-1",
+      "lat": 42.2612,
+      "lng": -87.8356
+    },
+    "status": "open",
+    "priority": "high",
+    "submitted_date": "2026-03-01",
+    "updated_date": "2026-03-05",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-01",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-05",
+        "note": "Added to inspection queue. Near Everett Elementary — flagged for priority review.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-003",
+    "resident_name": "Patricia Chen",
+    "contact_phone": "847-555-0193",
+    "category": "pothole",
+    "description": "There's a cluster of potholes on Deerpath right near the middle school. The kids walk through there every morning and cars swerve to avoid them.",
+    "location": {
+      "address": "901 N McKinley Rd",
+      "zone": "NW-3",
+      "lat": 42.2598,
+      "lng": -87.8445
+    },
+    "status": "completed",
+    "priority": "critical",
+    "submitted_date": "2026-01-20",
+    "updated_date": "2026-02-28",
+    "resolution_eta": null,
+    "assigned_crew": "Crew-A",
+    "completed_date": "2026-02-28",
+    "updates": [
+      {
+        "date": "2026-01-20",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-01-22",
+        "note": "CRITICAL — school zone. Fast-tracked for immediate review.",
+        "by": "Supervisor Martinez"
+      },
+      {
+        "date": "2026-01-25",
+        "note": "Crew-A assigned for emergency repair.",
+        "by": "Dispatch"
+      },
+      {
+        "date": "2026-02-28",
+        "note": "Repair completed. Three potholes filled and sealed. Road resurfaced 20ft section.",
+        "by": "Crew-A Lead"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-004",
+    "resident_name": "Robert Thompson",
+    "contact_phone": "847-555-0331",
+    "category": "streetlight",
+    "description": "The streetlight on the corner of Westminster and Oakwood has been out for two weeks. It's very dark walking the dog at night.",
+    "location": {
+      "address": "400 Westminster Ave",
+      "zone": "SE-2",
+      "lat": 42.2445,
+      "lng": -87.838
+    },
+    "status": "in_progress",
+    "priority": "medium",
+    "submitted_date": "2026-03-05",
+    "updated_date": "2026-03-15",
+    "resolution_eta": "2026-03-28",
+    "assigned_crew": "Electrical-1",
+    "updates": [
+      {
+        "date": "2026-03-05",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-08",
+        "note": "Confirmed outage. Ballast replacement needed.",
+        "by": "Electrical Inspector"
+      },
+      {
+        "date": "2026-03-15",
+        "note": "Part ordered. Estimated install week of March 25.",
+        "by": "Electrical-1"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-005",
+    "resident_name": "Linda Kowalski",
+    "contact_phone": "847-555-0478",
+    "category": "sidewalk",
+    "description": "Multiple sidewalk panels on our block are cracked and uneven. My neighbor uses a wheelchair and can't get through safely. This is an ADA issue.",
+    "location": {
+      "address": "155 E Laurel Ave",
+      "zone": "SE-2",
+      "lat": 42.2458,
+      "lng": -87.837
+    },
+    "status": "open",
+    "priority": "high",
+    "submitted_date": "2026-03-12",
+    "updated_date": "2026-03-14",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-12",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-14",
+        "note": "ADA compliance concern flagged. Escalated to priority queue.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-006",
+    "resident_name": "David Park",
+    "contact_phone": "847-555-0562",
+    "category": "drainage",
+    "description": "Every time it rains, the storm drain on Elm St backs up and floods the road. Water pools in front of three houses. We've reported this before.",
+    "location": {
+      "address": "720 W Elm St",
+      "zone": "SW-1",
+      "lat": 42.251,
+      "lng": -87.852
+    },
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-08",
+    "updated_date": "2026-03-10",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-08",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-10",
+        "note": "Noted as repeat issue. Previous SR-2025-089 was closed incomplete. Re-opened for full assessment.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-007",
+    "resident_name": "Susan Miller",
+    "contact_phone": "847-555-0621",
+    "category": "pothole",
+    "description": "Small pothole forming on Ridge Rd near the park entrance. Not huge yet but it's growing fast with all the rain.",
+    "location": {
+      "address": "500 Ridge Rd",
+      "zone": "NE-1",
+      "lat": 42.263,
+      "lng": -87.831
+    },
+    "status": "open",
+    "priority": "low",
+    "submitted_date": "2026-03-18",
+    "updated_date": "2026-03-18",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-18",
+        "note": "Request received and logged. Queued for routine inspection.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-008",
+    "resident_name": "Michael Adams",
+    "contact_phone": "847-555-0745",
+    "category": "tree_damage",
+    "description": "Big tree branch fell during the storm last night and is blocking half the sidewalk on Sheridan. Kids have to walk in the street to get around it.",
+    "location": {
+      "address": "880 N Sheridan Rd",
+      "zone": "NW-3",
+      "lat": 42.2595,
+      "lng": -87.8425
+    },
+    "status": "completed",
+    "priority": "high",
+    "submitted_date": "2026-03-14",
+    "updated_date": "2026-03-15",
+    "resolution_eta": null,
+    "assigned_crew": "Forestry-1",
+    "completed_date": "2026-03-15",
+    "updates": [
+      {
+        "date": "2026-03-14",
+        "note": "Request received and logged. URGENT — pedestrian safety hazard.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-14",
+        "note": "Forestry crew dispatched same day.",
+        "by": "Dispatch"
+      },
+      {
+        "date": "2026-03-15",
+        "note": "Branch removed and sidewalk cleared. Tree assessed — no further risk.",
+        "by": "Forestry-1 Lead"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-009",
+    "resident_name": "Jennifer Lee",
+    "contact_phone": "847-555-0834",
+    "category": "sign_damage",
+    "description": "The stop sign at the intersection of Bank Lane and Spruce is bent and hard to see. Someone must have hit it. It's a busy corner with kids crossing.",
+    "location": {
+      "address": "200 Bank Lane",
+      "zone": "NE-1",
+      "lat": 42.2615,
+      "lng": -87.834
+    },
+    "status": "in_progress",
+    "priority": "high",
+    "submitted_date": "2026-03-10",
+    "updated_date": "2026-03-18",
+    "resolution_eta": "2026-03-22",
+    "assigned_crew": "Signs-1",
+    "updates": [
+      {
+        "date": "2026-03-10",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-12",
+        "note": "Confirmed — sign bent at 45 degrees. Near school zone crossing.",
+        "by": "Inspector Riley"
+      },
+      {
+        "date": "2026-03-18",
+        "note": "Replacement sign ordered. Temporary reflective sign installed.",
+        "by": "Signs-1"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-010",
+    "resident_name": "Thomas Wright",
+    "contact_phone": "847-555-0912",
+    "category": "pothole",
+    "description": "Really deep pothole on Illinois Rd right where you turn into the shopping center. I saw a car blow a tire on it yesterday.",
+    "location": {
+      "address": "1100 W Illinois Rd",
+      "zone": "SW-1",
+      "lat": 42.2488,
+      "lng": -87.8545
+    },
+    "status": "in_progress",
+    "priority": "critical",
+    "submitted_date": "2026-03-02",
+    "updated_date": "2026-03-19",
+    "resolution_eta": "2026-03-21",
+    "assigned_crew": "Crew-C",
+    "updates": [
+      {
+        "date": "2026-03-02",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-03",
+        "note": "CRITICAL — safety hazard confirmed. 28\" wide, 6\" deep on high-traffic road.",
+        "by": "Inspector Torres"
+      },
+      {
+        "date": "2026-03-05",
+        "note": "Temporary cold patch applied. Full repair scheduled.",
+        "by": "Crew-C"
+      },
+      {
+        "date": "2026-03-19",
+        "note": "Full repair in progress. Road section being resurfaced.",
+        "by": "Crew-C Lead"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-011",
+    "resident_name": "Karen Foster",
+    "contact_phone": "847-555-1023",
+    "category": "sidewalk",
+    "description": "Sidewalk near Lake Forest High School is buckling from tree roots. The roots are pushing up three panels. Lots of students walk this route.",
+    "location": {
+      "address": "1285 N McKinley Rd",
+      "zone": "NW-3",
+      "lat": 42.262,
+      "lng": -87.845
+    },
+    "status": "open",
+    "priority": "high",
+    "submitted_date": "2026-03-16",
+    "updated_date": "2026-03-17",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-16",
+        "note": "Request received and logged.",
+        "by": "system"
+      },
+      {
+        "date": "2026-03-17",
+        "note": "School zone proximity confirmed. Added to priority inspection queue.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-012",
+    "resident_name": "Angela Rivera",
+    "contact_phone": "847-555-1187",
+    "category": "crosswalk",
+    "description": "The crosswalk paint at Deerpath and Western Ave is completely faded. You can barely see it. This is a main crossing for Cherokee Elementary kids.",
+    "location": {
+      "address": "400 E Deerpath Ave",
+      "zone": "NE-1",
+      "lat": 42.258,
+      "lng": -87.833
+    },
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-19",
+    "updated_date": "2026-03-19",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-19",
+        "note": "Request received and logged. School crossing — flagged for review.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-013",
+    "resident_name": "Anonymous",
+    "contact_phone": null,
+    "category": "pothole",
+    "description": "Large pothole on elm street near the park",
+    "location": {
+      "address": "123 Elm St",
+      "zone": "NE-1",
+      "lat": 42.250372834972886,
+      "lng": -87.83544348887412
+    },
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-22",
+    "updated_date": "2026-03-22",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-22",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-014",
+    "resident_name": "Anonymous",
+    "contact_phone": null,
+    "category": "pothole",
+    "description": "Large pothole on Elm St",
+    "location": {
+      "address": "123 Elm St NW",
+      "zone": "NW-3",
+      "lat": 42.26497754682772,
+      "lng": -87.84587866090523
+    },
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-22",
+    "updated_date": "2026-03-22",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-22",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-015",
+    "resident_name": "Test User",
+    "contact_phone": null,
+    "contact_email": null,
+    "notify_by_email": false,
+    "category": "pothole",
+    "description": "Large pothole on Main St near City Hall",
+    "location": {
+      "address": "220 E Deerpath Rd, Lake Forest, IL",
+      "zone": "downtown",
+      "lat": 42.26073780487581,
+      "lng": -87.84074184959576
+    },
+    "photo": null,
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-28",
+    "updated_date": "2026-03-28",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-28",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-016",
+    "resident_name": "Test User",
+    "contact_phone": null,
+    "contact_email": null,
+    "notify_by_email": false,
+    "category": "pothole",
+    "description": "Large pothole on Main St near City Hall",
+    "location": {
+      "address": "220 E Deerpath Rd, Lake Forest, IL",
+      "zone": "downtown",
+      "lat": 42.24874907385161,
+      "lng": -87.84818638047292
+    },
+    "photo": null,
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-28",
+    "updated_date": "2026-03-28",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-28",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-017",
+    "resident_name": "Chat User",
+    "contact_phone": null,
+    "contact_email": null,
+    "notify_by_email": false,
+    "category": "pothole",
+    "description": "Big hole on Main St",
+    "location": {
+      "address": "100 Main St",
+      "zone": "NE-1",
+      "lat": 42.24878255267413,
+      "lng": -87.84051851082607
+    },
+    "photo": null,
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-29",
+    "updated_date": "2026-03-29",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-29",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-018",
+    "resident_name": "Chat User",
+    "contact_phone": null,
+    "contact_email": null,
+    "notify_by_email": false,
+    "category": "pothole",
+    "description": "Big hole on Main St",
+    "location": {
+      "address": "100 Main St",
+      "zone": "NE-1",
+      "lat": 42.254831939343276,
+      "lng": -87.83315243268969
+    },
+    "photo": null,
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-29",
+    "updated_date": "2026-03-29",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-29",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-019",
+    "resident_name": "Chat User",
+    "contact_phone": null,
+    "contact_email": null,
+    "notify_by_email": false,
+    "category": "pothole",
+    "description": "Big hole on Main St",
+    "location": {
+      "address": "100 Main St",
+      "zone": "NE-1",
+      "lat": 42.25531401972589,
+      "lng": -87.84101927393276
+    },
+    "photo": null,
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-29",
+    "updated_date": "2026-03-29",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-29",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  },
+  {
+    "id": "SR-2026-020",
+    "resident_name": "Test User",
+    "contact_phone": null,
+    "contact_email": null,
+    "notify_by_email": false,
+    "category": "pothole",
+    "description": "Large pothole on Main St near City Hall",
+    "location": {
+      "address": "220 E Deerpath Rd, Lake Forest, IL",
+      "zone": "downtown",
+      "lat": 42.24888041279355,
+      "lng": -87.84381974061202
+    },
+    "photo": null,
+    "status": "open",
+    "priority": "medium",
+    "submitted_date": "2026-03-29",
+    "updated_date": "2026-03-29",
+    "resolution_eta": null,
+    "assigned_crew": null,
+    "updates": [
+      {
+        "date": "2026-03-29",
+        "note": "Request received and logged.",
+        "by": "system"
+      }
+    ]
+  }
+]

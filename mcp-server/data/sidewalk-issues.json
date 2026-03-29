@@ -1,0 +1,154 @@
+[
+  {
+    "id": "SW-001",
+    "severity": 7,
+    "heave_inches": 2.5,
+    "panels_affected": 3,
+    "location": {
+      "address": "300 E Illinois Rd",
+      "lat": 42.2489,
+      "lng": -87.8356,
+      "zone": "NE-1"
+    },
+    "reported_date": "2025-09-03",
+    "cause": "tree_roots",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 3892,
+    "ada_compliant": false,
+    "work_order_id": "WO-2024-002"
+  },
+  {
+    "id": "SW-002",
+    "severity": 3,
+    "heave_inches": 0.75,
+    "panels_affected": 1,
+    "location": {
+      "address": "222 E Westminster",
+      "lat": 42.2475,
+      "lng": -87.8362,
+      "zone": "NE-1"
+    },
+    "reported_date": "2025-12-01",
+    "cause": "frost_heave",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 3719,
+    "ada_compliant": true,
+    "work_order_id": "WO-2024-006"
+  },
+  {
+    "id": "SW-003",
+    "severity": 8,
+    "heave_inches": 3,
+    "panels_affected": 5,
+    "location": {
+      "address": "400 N Ahwahnee Ln",
+      "lat": 42.2534,
+      "lng": -87.8423,
+      "zone": "NW-3"
+    },
+    "reported_date": "2026-01-05",
+    "cause": "tree_roots",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 2862,
+    "ada_compliant": false,
+    "work_order_id": "WO-2024-011"
+  },
+  {
+    "id": "SW-004",
+    "severity": 5,
+    "heave_inches": 1.25,
+    "panels_affected": 4,
+    "location": {
+      "address": "350 E Woodland Rd",
+      "lat": 42.2498,
+      "lng": -87.8341,
+      "zone": "NE-1"
+    },
+    "reported_date": "2025-11-10",
+    "cause": "settling",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 4334,
+    "ada_compliant": true,
+    "work_order_id": "WO-2024-015"
+  },
+  {
+    "id": "SW-005",
+    "severity": 9,
+    "heave_inches": 3.5,
+    "panels_affected": 2,
+    "location": {
+      "address": "100 E Laurel Ave",
+      "lat": 42.2456,
+      "lng": -87.8375,
+      "zone": "SE-2"
+    },
+    "reported_date": "2025-04-12",
+    "cause": "tree_roots",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 3474,
+    "ada_compliant": false,
+    "work_order_id": "WO-2024-009"
+  },
+  {
+    "id": "SW-006",
+    "severity": 6,
+    "heave_inches": 1.75,
+    "panels_affected": 2,
+    "location": {
+      "address": "800 N McKinley Rd",
+      "lat": 42.2591,
+      "lng": -87.8439,
+      "zone": "NW-3"
+    },
+    "reported_date": "2026-02-14",
+    "cause": "frost_heave",
+    "near_school": true,
+    "school_name": "Lake Forest High School",
+    "school_distance_ft": 2167,
+    "ada_compliant": true,
+    "work_order_id": null
+  },
+  {
+    "id": "SW-007",
+    "severity": 7,
+    "heave_inches": 2,
+    "panels_affected": 3,
+    "location": {
+      "address": "550 E Deerpath",
+      "lat": 42.2515,
+      "lng": -87.8321,
+      "zone": "NE-1"
+    },
+    "reported_date": "2026-03-02",
+    "cause": "tree_roots",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 4991,
+    "ada_compliant": false,
+    "work_order_id": null
+  },
+  {
+    "id": "SW-008",
+    "severity": 4,
+    "heave_inches": 1,
+    "panels_affected": 1,
+    "location": {
+      "address": "200 W Vine Ave",
+      "lat": 42.2468,
+      "lng": -87.8432,
+      "zone": "SW-1"
+    },
+    "reported_date": "2026-01-28",
+    "cause": "settling",
+    "near_school": true,
+    "school_name": "Deer Path Middle School",
+    "school_distance_ft": 1874,
+    "ada_compliant": true,
+    "work_order_id": null
+  }
+]

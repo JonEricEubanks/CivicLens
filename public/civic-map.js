@@ -1,0 +1,1091 @@
+/**
+ * CivicLens — Interactive Infrastructure Map
+ *
+ * Full-screen Leaflet.js map showing potholes, sidewalk issues, work orders,
+ * service requests, and schools across Lake Forest. Color-coded by type,
+ * filterable by category, zone, and status.
+ */
+
+/* global L */
+
+(function () {
+  let mapOverlay = null;
+  let leafletMap = null;
+  let allMarkers = [];
+  let layerGroup = null;
+  let activeFilters = { types: new Set(window.staffAuthToken ? ['pothole','sidewalk','work_order','service_request','school'] : ['service_request','school']), zone: 'all', status: 'all' };
+
+  // ─── Map center & boundary for Lake Forest, IL ────────
+  const MAP_CONFIG = {
+    center: [42.2586, -87.8407],
+    zoom: 13,
+    maxZoom: 19,
+    fitMaxZoom: 14,
+    fitPadding: [20, 20],
+    // Real Lake Forest, IL city boundary (OpenStreetMap relation 122071, simplified)
+    boundary: [
+      [42.258782, -87.902012],
+      [42.254845, -87.90103],
+      [42.253493, -87.899769],
+      [42.250064, -87.901492],
+      [42.244495, -87.901518],
+      [42.240107, -87.899468],
+      [42.237969, -87.900912],
+      [42.23666, -87.900687],
+      [42.236685, -87.901553],
+      [42.228522, -87.901358],
+      [42.203447, -87.890053],
+      [42.203589, -87.846963],
+      [42.210838, -87.847006],
+      [42.210814, -87.844735],
+      [42.212394, -87.842161],
+      [42.218023, -87.842147],
+      [42.218454, -87.816239],
+      [42.219276, -87.815168],
+      [42.220264, -87.815182],
+      [42.221526, -87.809925],
+      [42.223328, -87.807632],
+      [42.226781, -87.810773],
+      [42.239076, -87.814556],
+      [42.241053, -87.815872],
+      [42.248669, -87.817666],
+      [42.251422, -87.819517],
+      [42.255039, -87.820564],
+      [42.260596, -87.82448],
+      [42.268859, -87.828084],
+      [42.268873, -87.872234],
+      [42.279731, -87.878551],
+      [42.279821, -87.885532],
+      [42.261679, -87.885971],
+      [42.261558, -87.889095],
+      [42.258126, -87.885976],
+      [42.250906, -87.885903],
+      [42.250966, -87.887666],
+      [42.256391, -87.890173],
+      [42.255847, -87.893692],
+      [42.257924, -87.892479],
+      [42.259069, -87.894254],
+      [42.258782, -87.902012],
+    ],
+  };
+
+  let boundaryLayer = null;
+  let fittedRef = false;
+
+  // ─── Marker config ────────────────────────────────────
+  const MARKER_CONFIG = {
+    pothole:         { color: '#ef4444', icon: CivicIcons.pothole('w-4 h-4 inline'), label: 'Pothole',          fillColor: '#fca5a5' },
+    sidewalk:        { color: '#f97316', icon: CivicIcons.sidewalk('w-4 h-4 inline'), label: 'Sidewalk Issue',    fillColor: '#fdba74' },
+    work_order:      { color: '#6366f1', icon: CivicIcons.wrench('w-4 h-4 inline'), label: 'Work Order',       fillColor: '#a5b4fc' },
+    service_request: { color: '#10b981', icon: CivicIcons.notepad('w-4 h-4 inline'), label: 'Service Request',  fillColor: '#6ee7b7' },
+    school:          { color: '#8b5cf6', icon: CivicIcons.school('w-4 h-4 inline'), label: 'School',           fillColor: '#c4b5fd' },
+  };
+
+  const STATUS_COLORS = CivicUtils.MAP_STATUS_COLORS;
+  const PRIORITY_LABELS = { critical: CivicIcons.priorityCritical('w-3 h-3 inline') + ' Critical', high: CivicIcons.priorityHigh('w-3 h-3 inline') + ' High', medium: CivicIcons.priorityMedium('w-3 h-3 inline') + ' Medium', low: CivicIcons.priorityLow('w-3 h-3 inline') + ' Low' };
+
+  const escapeHtml = CivicUtils.escapeHtml;
+
+  let activePopupTab = 'overview';
+
+  // Map service-request categories to their issue-type colors so a
+  // "pothole" service request looks like a pothole on the map, not a
+  // generic green dot.  A dashed border distinguishes requests from
+  // confirmed infrastructure records.
+  const SR_CATEGORY_MAP = {
+    pothole:   'pothole',
+    sidewalk:  'sidewalk',
+    crosswalk: 'sidewalk',
+  };
+
+  function createCircleMarker(m) {
+    // For service requests whose category matches an issue type, adopt
+    // that type's fill color so the map reads intuitively.
+    const visualType = (m.type === 'service_request' && SR_CATEGORY_MAP[m.category])
+      ? SR_CATEGORY_MAP[m.category]
+      : m.type;
+    const cfg = MARKER_CONFIG[m.type];          // keeps legend / popup logic unchanged
+    const visualCfg = MARKER_CONFIG[visualType]; // controls what the user sees on the map
+    const statusColor = STATUS_COLORS[m.status] || visualCfg.color;
+
+    let marker;
+    if (m.type === 'school') {
+      marker = L.marker([m.lat, m.lng], {
+        icon: L.divIcon({
+          className: '',
+          html: '<div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#8b5cf6;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);color:#fff;font-size:15px" title="' + (m.name || 'School').replace(/"/g, '&quot;') + '">\uD83C\uDFEB</div>',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+          popupAnchor: [0, -14],
+        })
+      });
+    } else {
+      const radius = m.severity ? Math.max(5, Math.min(12, m.severity * 1.2)) : 7;
+      marker = L.circleMarker([m.lat, m.lng], {
+        radius,
+        fillColor: visualCfg.fillColor,
+        color: statusColor,
+        weight: 2.5,
+        opacity: 1,
+        fillOpacity: 0.7,
+        dashArray: m.type === 'service_request' ? '4 3' : null,
+      });
+    }
+
+    marker._civicData = m;
+    marker.bindPopup(() => buildPopup(m), {
+      maxWidth: 360,
+      minWidth: window.innerWidth < 768 ? 240 : 300,
+      className: 'civic-popup-card',
+      closeButton: false,
+    });
+    marker.on('popupopen', () => { activePopupTab = 'overview'; });
+    return marker;
+  }
+
+  // ─── Tabbed card popup builder ────────────────────────────────
+  function getTabsForType(type) {
+    switch (type) {
+      case 'pothole':         return ['overview', 'details', 'location'];
+      case 'sidewalk':        return ['overview', 'details', 'location'];
+      case 'work_order':      return ['overview', 'details', 'cost'];
+      case 'service_request': return ['overview', 'history', 'location'];
+      case 'school':          return ['overview', 'details'];
+      default:                return ['overview'];
+    }
+  }
+
+  function severityBar(value, max = 10) {
+    const pct = Math.round((value / max) * 100);
+    const color = value >= 8 ? '#ef4444' : value >= 5 ? '#f59e0b' : '#22c55e';
+    return `<div style="display:flex;align-items:center;gap:8px;width:100%">
+      <div style="flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;transition:width .3s"></div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:${color}">${value}/${max}</span>
+    </div>`;
+  }
+
+  function statCell(label, value, icon) {
+    return `<div style="padding:10px;background:#fff;display:flex;flex-direction:column;align-items:center;gap:2px">
+      ${icon ? `<span style="color:#64748b">${icon}</span>` : ''}
+      <span style="font-size:13px;font-weight:700;color:#1e293b">${value}</span>
+      <span style="font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px">${label}</span>
+    </div>`;
+  }
+
+  function buildTabContent(m, tab) {
+    const cfg = MARKER_CONFIG[m.type];
+    let html = '';
+
+    if (tab === 'overview') {
+      // -- stat grid --
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:10px">`;
+      if (m.severity != null) {
+        const sevLabel = m.severity >= 8 ? 'Critical' : m.severity >= 5 ? 'Moderate' : 'Low';
+        html += statCell('Severity', sevLabel, CivicIcons.alertTriangle('w-3.5 h-3.5'));
+      }
+      if (m.status) {
+        const sColor = STATUS_COLORS[m.status] || '#94a3b8';
+        html += statCell('Status', `<span style="color:${sColor}">${m.status.replace(/_/g,' ')}</span>`, CivicIcons.circleProgress('w-3.5 h-3.5'));
+      }
+      if (m.priority) html += statCell('Priority', m.priority, CivicIcons.target('w-3.5 h-3.5'));
+      if (m.zone) html += statCell('Zone', m.zone, CivicIcons.mapPin('w-3.5 h-3.5'));
+      if (m.enrollment) html += statCell('Students', m.enrollment.toLocaleString(), CivicIcons.user('w-3.5 h-3.5'));
+      if (m.school_type) html += statCell('Type', m.school_type, CivicIcons.school('w-3.5 h-3.5'));
+      if (m.category) html += statCell('Category', m.category.replace(/_/g,' '), CivicIcons.folder('w-3.5 h-3.5'));
+      if (m.work_type) html += statCell('Work Type', m.work_type.replace(/_/g,' '), CivicIcons.wrench('w-3.5 h-3.5'));
+      if (m.estimated_cost) html += statCell('Est. Cost', '$' + m.estimated_cost.toLocaleString(), CivicIcons.dollar('w-3.5 h-3.5'));
+      html += `</div>`;
+
+      // severity bar for pothole/sidewalk
+      if ((m.type === 'pothole' || m.type === 'sidewalk') && m.severity != null) {
+        html += `<div style="margin-bottom:8px">
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">SEVERITY LEVEL</div>
+          ${severityBar(m.severity)}
+        </div>`;
+      }
+
+      // Service request resident + date
+      if (m.type === 'service_request') {
+        html += `<div style="display:flex;gap:8px;margin-bottom:8px">`;
+        if (m.resident_name) {
+          html += `<div style="flex:1;display:flex;align-items:center;gap:6px;padding:8px;background:#f0fdf4;border-radius:8px">
+            <span style="color:#10b981">${CivicIcons.user('w-3.5 h-3.5')}</span>
+            <div><div style="font-size:10px;color:#94a3b8">Submitted by</div><div style="font-size:12px;font-weight:600;color:#1e293b">${escapeHtml(m.resident_name)}</div></div>
+          </div>`;
+        }
+        if (m.submitted_date) {
+          html += `<div style="flex:1;display:flex;align-items:center;gap:6px;padding:8px;background:#eff6ff;border-radius:8px">
+            <span style="color:#3b82f6">${CivicIcons.calendar('w-3.5 h-3.5')}</span>
+            <div><div style="font-size:10px;color:#94a3b8">Filed on</div><div style="font-size:12px;font-weight:600;color:#1e293b">${m.submitted_date}</div></div>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+
+      // description for service requests
+      if (m.description) {
+        html += `<div style="background:#f8fafc;border-radius:8px;padding:8px 10px;font-size:12px;color:#475569;line-height:1.5;border-left:3px solid ${cfg.color}">
+          "${escapeHtml(m.description.length > 140 ? m.description.slice(0, 140) + '…' : m.description)}"
+        </div>`;
+      }
+
+      // school name for the school type
+      if (m.type === 'school' && m.name) {
+        html += `<div style="font-size:13px;color:#1e293b;font-weight:600;margin-bottom:4px">${escapeHtml(m.name)}</div>`;
+      }
+    }
+
+    else if (tab === 'details') {
+      html += `<div style="display:flex;flex-direction:column;gap:8px">`;
+
+      if (m.type === 'pothole' || m.type === 'sidewalk') {
+        if (m.severity != null) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">Severity Score</span>
+            <span style="font-size:12px;font-weight:600;color:#1e293b">${m.severity}/10</span>
+          </div>`;
+        }
+        if (m.near_school) {
+          html += `<div style="display:flex;align-items:center;gap:6px;padding:8px;background:#fef3c7;border-radius:8px">
+            <span style="color:#d97706">${CivicIcons.alertTriangle('w-4 h-4')}</span>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#92400e">Near School Zone</div>
+              <div style="font-size:10px;color:#a16207">${m.school_name || 'Nearby school'}</div>
+            </div>
+          </div>`;
+        }
+        if (m.ada_compliant === false) {
+          html += `<div style="display:flex;align-items:center;gap:6px;padding:8px;background:#fee2e2;border-radius:8px">
+            <span style="color:#dc2626">${CivicIcons.accessibility('w-4 h-4')}</span>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#991b1b">ADA Non-Compliant</div>
+              <div style="font-size:10px;color:#b91c1c">Requires accessibility remediation</div>
+            </div>
+          </div>`;
+        }
+      }
+
+      if (m.type === 'work_order') {
+        if (m.work_type) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">Work Type</span>
+            <span style="font-size:12px;font-weight:600;color:#1e293b">${m.work_type.replace(/_/g,' ')}</span>
+          </div>`;
+        }
+        if (m.priority) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">Priority</span>
+            <span style="font-size:12px">${PRIORITY_LABELS[m.priority] || m.priority}</span>
+          </div>`;
+        }
+      }
+
+      if (m.type === 'school') {
+        if (m.name) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">School Name</span>
+            <span style="font-size:12px;font-weight:600;color:#1e293b">${escapeHtml(m.name)}</span>
+          </div>`;
+        }
+        if (m.school_type) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">School Type</span>
+            <span style="font-size:12px;font-weight:600;color:#1e293b">${m.school_type}</span>
+          </div>`;
+        }
+        if (m.enrollment) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">Enrollment</span>
+            <span style="font-size:12px;font-weight:600;color:#1e293b">${m.enrollment.toLocaleString()} students</span>
+          </div>`;
+        }
+      }
+
+      if (m.type === 'service_request') {
+        if (m.category) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">Category</span>
+            <span style="font-size:12px;font-weight:600;color:#1e293b">${m.category.replace(/_/g,' ')}</span>
+          </div>`;
+        }
+        if (m.submitted_date) {
+          html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+            <span style="font-size:12px;color:#64748b">Submitted</span>
+            <span style="font-size:12px;font-weight:600;color:#1e293b">${m.submitted_date}</span>
+          </div>`;
+        }
+        if (m.description) {
+          html += `<div style="margin-top:4px;padding:8px;background:#f8fafc;border-radius:8px;font-size:12px;color:#475569;line-height:1.5">
+            "${escapeHtml(m.description)}"
+          </div>`;
+        }
+      }
+
+      // ID row if present
+      if (m.id) {
+        html += `<div style="display:flex;justify-content:space-between;padding:6px 0">
+          <span style="font-size:12px;color:#64748b">Reference ID</span>
+          <span style="font-size:11px;font-family:monospace;color:#6366f1;background:#eef2ff;padding:2px 6px;border-radius:4px">${m.id}</span>
+        </div>`;
+      }
+
+      html += `</div>`;
+    }
+
+    else if (tab === 'location') {
+      html += `<div style="display:flex;flex-direction:column;gap:8px">`;
+      if (m.address) {
+        html += `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px;background:#f0fdf4;border-radius:8px">
+          <span style="color:#16a34a;margin-top:1px">${CivicIcons.mapPin('w-4 h-4')}</span>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#1e293b">${escapeHtml(m.address)}</div>
+            <div style="font-size:10px;color:#64748b;margin-top:2px">Lake Forest, IL</div>
+          </div>
+        </div>`;
+      }
+      if (m.zone) {
+        html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+          <span style="font-size:12px;color:#64748b">Zone</span>
+          <span style="font-size:12px;font-weight:600;color:#1e293b">${m.zone}</span>
+        </div>`;
+      }
+      html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9">
+        <span style="font-size:12px;color:#64748b">Coordinates</span>
+        <span style="font-size:11px;font-family:monospace;color:#64748b">${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</span>
+      </div>`;
+      html += `</div>`;
+    }
+
+    else if (tab === 'cost') {
+      html += `<div style="display:flex;flex-direction:column;gap:8px">`;
+      if (m.estimated_cost) {
+        html += `<div style="text-align:center;padding:16px 0">
+          <div style="font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Estimated Cost</div>
+          <div style="font-size:28px;font-weight:800;color:#1e293b">$${m.estimated_cost.toLocaleString()}</div>
+        </div>`;
+        // cost context bar
+        const costPct = Math.min(100, Math.round((m.estimated_cost / 10000) * 100));
+        const costColor = m.estimated_cost > 5000 ? '#ef4444' : m.estimated_cost > 2000 ? '#f59e0b' : '#22c55e';
+        html += `<div>
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">BUDGET IMPACT</div>
+          <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden">
+            <div style="width:${costPct}%;height:100%;background:${costColor};border-radius:3px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:3px">
+            <span style="font-size:9px;color:#94a3b8">$0</span>
+            <span style="font-size:9px;color:#94a3b8">$10,000</span>
+          </div>
+        </div>`;
+      } else {
+        html += `<div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:12px">No cost estimate available</div>`;
+      }
+      if (m.priority) {
+        html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f1f5f9;margin-top:4px">
+          <span style="font-size:12px;color:#64748b">Priority</span>
+          <span style="font-size:12px">${PRIORITY_LABELS[m.priority] || m.priority}</span>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+
+    else if (tab === 'history') {
+      // Timeline for service requests
+      html += `<div style="display:flex;flex-direction:column;gap:0">`;
+      if (m.submitted_date) {
+        html += buildTimelineRow('Submitted', m.submitted_date, m.resident_name ? 'Request from ' + escapeHtml(m.resident_name) : 'Request created', '#3b82f6', false);
+      }
+      if (m.status === 'open') {
+        html += buildTimelineRow('Open', '', 'Awaiting assignment', '#94a3b8', true);
+      }
+      if (m.status === 'in_progress') {
+        html += buildTimelineRow('In Progress', m.updated_date || '', m.assigned_crew ? 'Assigned to ' + m.assigned_crew : 'Work is underway', '#f59e0b', !m.resolution_eta);
+        if (m.resolution_eta) {
+          html += buildTimelineRow('ETA', m.resolution_eta, 'Estimated resolution', '#8b5cf6', true);
+        }
+      }
+      if (m.status === 'completed') {
+        html += buildTimelineRow('In Progress', '', 'Work completed', '#f59e0b', false);
+        html += buildTimelineRow('Completed', m.updated_date || '', 'Issue resolved', '#22c55e', true);
+      }
+      html += `</div>`;
+    }
+
+    return html;
+  }
+
+  function buildTimelineRow(title, date, desc, color, isLast) {
+    return `<div style="display:flex;gap:10px;min-height:48px">
+      <div style="display:flex;flex-direction:column;align-items:center;width:16px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 0 2px ${color}40;flex-shrink:0;margin-top:3px"></div>
+        ${!isLast ? `<div style="flex:1;width:1px;background:#e2e8f0;margin:2px 0"></div>` : ''}
+      </div>
+      <div style="flex:1;padding-bottom:${isLast ? '0' : '10px'}">
+        <div style="font-size:12px;font-weight:600;color:#1e293b">${title}</div>
+        ${date ? `<div style="font-size:10px;color:#94a3b8">${date}</div>` : ''}
+        <div style="font-size:11px;color:#64748b;margin-top:1px">${desc}</div>
+      </div>
+    </div>`;
+  }
+
+  // ── Hero scene illustrations per category ──
+  const HERO_SCENES = {
+    pothole: `<svg viewBox="0 0 340 130" style="position:absolute;inset:0;width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="55" width="340" height="75" fill="rgba(255,255,255,0.05)"/>
+      <rect x="30" y="88" width="22" height="3" rx="1.5" fill="rgba(255,255,255,0.13)"/>
+      <rect x="70" y="88" width="22" height="3" rx="1.5" fill="rgba(255,255,255,0.13)"/>
+      <rect x="110" y="88" width="22" height="3" rx="1.5" fill="rgba(255,255,255,0.13)"/>
+      <rect x="150" y="88" width="22" height="3" rx="1.5" fill="rgba(255,255,255,0.13)"/>
+      <rect x="190" y="88" width="22" height="3" rx="1.5" fill="rgba(255,255,255,0.13)"/>
+      <rect x="230" y="88" width="22" height="3" rx="1.5" fill="rgba(255,255,255,0.13)"/>
+      <rect x="270" y="88" width="22" height="3" rx="1.5" fill="rgba(255,255,255,0.13)"/>
+      <ellipse cx="220" cy="75" rx="28" ry="10" fill="rgba(0,0,0,0.12)"/>
+      <ellipse cx="220" cy="73" rx="22" ry="7" fill="rgba(0,0,0,0.08)"/>
+      <polygon points="295,105 300,78 305,105" fill="rgba(255,200,50,0.15)" stroke="rgba(255,200,50,0.2)" stroke-width="0.5"/>
+      <circle cx="50" cy="25" r="18" fill="rgba(255,255,255,0.04)"/>
+      <circle cx="320" cy="18" r="12" fill="rgba(255,255,255,0.03)"/>
+      <path d="M0 55 Q170 42 340 55" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+    </svg>`,
+    sidewalk: `<svg viewBox="0 0 340 130" style="position:absolute;inset:0;width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
+      <rect x="90" y="50" width="160" height="80" fill="rgba(255,255,255,0.04)" rx="3"/>
+      <line x1="90" y1="80" x2="250" y2="80" stroke="rgba(255,255,255,0.07)" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <line x1="90" y1="100" x2="250" y2="100" stroke="rgba(255,255,255,0.07)" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <circle cx="55" cy="42" r="22" fill="rgba(255,255,255,0.05)"/>
+      <rect x="53" y="64" width="4" height="26" fill="rgba(255,255,255,0.06)" rx="2"/>
+      <circle cx="295" cy="32" r="28" fill="rgba(255,255,255,0.04)"/>
+      <rect x="293" y="60" width="4" height="30" fill="rgba(255,255,255,0.05)" rx="2"/>
+      <path d="M160 55 L168 70 L163 85 L170 100" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+      <circle cx="30" cy="100" r="8" fill="rgba(255,255,255,0.03)"/>
+    </svg>`,
+    work_order: `<svg viewBox="0 0 340 130" style="position:absolute;inset:0;width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="26" x2="340" y2="26" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <line x1="0" y1="52" x2="340" y2="52" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <line x1="0" y1="78" x2="340" y2="78" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <line x1="0" y1="104" x2="340" y2="104" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <line x1="68" y1="0" x2="68" y2="130" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <line x1="136" y1="0" x2="136" y2="130" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <line x1="204" y1="0" x2="204" y2="130" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <line x1="272" y1="0" x2="272" y2="130" stroke="rgba(255,255,255,0.035)" stroke-width="0.5"/>
+      <circle cx="250" cy="45" r="28" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" fill="none"/>
+      <circle cx="250" cy="45" r="12" fill="rgba(255,255,255,0.04)"/>
+      <rect x="245" y="28" width="10" height="6" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="237" y="42" width="6" height="10" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="257" y="38" width="6" height="10" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="245" y="56" width="10" height="6" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <circle cx="80" cy="30" r="16" fill="rgba(255,255,255,0.03)"/>
+    </svg>`,
+    service_request: `<svg viewBox="0 0 340 130" style="position:absolute;inset:0;width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
+      <rect x="55" y="48" width="42" height="52" fill="rgba(255,255,255,0.05)" rx="2"/>
+      <rect x="60" y="55" width="8" height="8" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="73" y="55" width="8" height="8" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="60" y="70" width="8" height="8" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="73" y="70" width="8" height="8" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="108" y="32" width="58" height="68" fill="rgba(255,255,255,0.06)" rx="2"/>
+      <rect x="116" y="40" width="10" height="10" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="130" y="40" width="10" height="10" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="144" y="40" width="10" height="10" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="116" y="56" width="10" height="10" fill="rgba(255,255,255,0.05)" rx="1"/>
+      <rect x="175" y="52" width="36" height="48" fill="rgba(255,255,255,0.04)" rx="2"/>
+      <polygon points="193,22 175,52 211,52" fill="rgba(255,255,255,0.04)"/>
+      <circle cx="280" cy="28" r="20" fill="rgba(255,255,255,0.03)"/>
+      <circle cx="310" cy="72" r="12" fill="rgba(255,255,255,0.02)"/>
+    </svg>`,
+    school: `<svg viewBox="0 0 340 130" style="position:absolute;inset:0;width:100%;height:100%" xmlns="http://www.w3.org/2000/svg">
+      <rect x="100" y="48" width="140" height="52" fill="rgba(255,255,255,0.05)" rx="2"/>
+      <rect x="155" y="72" width="30" height="28" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <polygon points="170,18 100,48 240,48" fill="rgba(255,255,255,0.05)"/>
+      <rect x="165" y="28" width="10" height="20" fill="rgba(255,255,255,0.06)" rx="1"/>
+      <rect x="107" y="56" width="12" height="12" fill="rgba(255,255,255,0.05)" rx="1"/>
+      <rect x="125" y="56" width="12" height="12" fill="rgba(255,255,255,0.05)" rx="1"/>
+      <rect x="203" y="56" width="12" height="12" fill="rgba(255,255,255,0.05)" rx="1"/>
+      <rect x="221" y="56" width="12" height="12" fill="rgba(255,255,255,0.05)" rx="1"/>
+      <circle cx="50" cy="38" r="15" fill="rgba(255,255,255,0.03)"/>
+      <circle cx="300" cy="22" r="18" fill="rgba(255,255,255,0.03)"/>
+      <rect x="168" y="10" width="4" height="12" fill="rgba(255,255,255,0.08)" rx="1"/>
+      <polygon points="170,4 164,10 176,10" fill="rgba(255,255,255,0.08)"/>
+    </svg>`,
+  };
+
+  const HERO_GRADIENTS = {
+    pothole:         'linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #f87171 100%)',
+    sidewalk:        'linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%)',
+    work_order:      'linear-gradient(135deg, #312e81 0%, #4338ca 50%, #818cf8 100%)',
+    service_request: 'linear-gradient(135deg, #064e3b 0%, #059669 50%, #34d399 100%)',
+    school:          'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%)',
+  };
+
+  const HERO_ICON_FN = { pothole: 'pothole', sidewalk: 'sidewalk', work_order: 'wrench', service_request: 'notepad', school: 'school' };
+
+  function buildPopup(m) {
+    const cfg = MARKER_CONFIG[m.type];
+    const tabs = getTabsForType(m.type);
+    const statusColor = STATUS_COLORS[m.status] || cfg.color;
+    const titleText = m.type === 'school' && m.name ? escapeHtml(m.name)
+      : m.type === 'service_request' && m.category ? escapeHtml(m.category.replace(/_/g,' ')).replace(/^\w/, c => c.toUpperCase()) + ' Request'
+      : cfg.label;
+
+    const heroGrad = HERO_GRADIENTS[m.type] || HERO_GRADIENTS.service_request;
+    const heroScene = HERO_SCENES[m.type] || HERO_SCENES.service_request;
+    const heroIconFn = HERO_ICON_FN[m.type] || 'notepad';
+    const heroIcon = CivicIcons[heroIconFn] ? CivicIcons[heroIconFn]('w-full h-full') : cfg.icon;
+
+    let html = `<div class="civic-card-popup" style="font-family:system-ui,-apple-system,sans-serif;min-width:280px;max-width:340px">`;
+
+    // ── Hero Image Section ──
+    html += `<div class="civic-hero" style="position:relative;height:130px;overflow:hidden">`;
+    // Base gradient
+    html += `<div style="position:absolute;inset:0;background:${heroGrad}"></div>`;
+    // Scene illustration
+    html += heroScene;
+    // Large watermark icon
+    html += `<div style="position:absolute;right:14px;top:10px;opacity:0.12;color:white;width:72px;height:72px">${heroIcon}</div>`;
+    // Decorative floating dots
+    html += `<div style="position:absolute;left:18px;top:14px;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15)"></div>`;
+    html += `<div style="position:absolute;left:34px;top:22px;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.1)"></div>`;
+    html += `<div style="position:absolute;right:50%;top:18px;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.08)"></div>`;
+    // Multi-layer gradient overlay at bottom (like the reference profile card)
+    html += `<div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.08) 60%, transparent 100%)"></div>`;
+    html += `<div style="position:absolute;bottom:0;left:0;right:0;height:40px;backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px);background:linear-gradient(to top,rgba(0,0,0,0.15),transparent)"></div>`;
+    // Content overlaid on hero
+    html += `<div style="position:absolute;bottom:12px;left:14px;right:14px;display:flex;align-items:flex-end;gap:10px">`;
+    // Glass icon badge
+    html += `<div style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.15)">${cfg.icon}</div>`;
+    // Title + status badges
+    html += `<div style="flex:1;min-width:0">`;
+    html += `<div style="font-size:15px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,0.3)">${titleText}</div>`;
+    html += `<div style="display:flex;align-items:center;gap:6px;margin-top:3px">`;
+    if (m.status) {
+      html += `<span style="font-size:9px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,0.18);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:white;font-weight:600;text-transform:uppercase;letter-spacing:.3px;display:inline-flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:${statusColor};display:inline-block;box-shadow:0 0 4px ${statusColor}80"></span>${m.status.replace(/_/g,' ')}</span>`;
+    }
+    if (m.priority) {
+      html += `<span style="font-size:9px;color:rgba(255,255,255,0.85)">${PRIORITY_LABELS[m.priority] || m.priority}</span>`;
+    }
+    html += `</div></div>`;
+    // ID badge (glass)
+    if (m.id) html += `<span style="font-size:9px;color:rgba(255,255,255,0.9);font-family:monospace;background:rgba(255,255,255,0.12);padding:2px 6px;border-radius:5px;flex-shrink:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1)">${m.id}</span>`;
+    html += `</div>`;
+    html += `</div>`;
+
+    // ── Tab bar ──
+    html += `<div class="civic-tab-bar" style="display:flex;gap:0;padding:0 14px;border-bottom:1px solid #e2e8f0">`;
+    for (const tab of tabs) {
+      const isActive = tab === 'overview';
+      const tabLabel = tab.charAt(0).toUpperCase() + tab.slice(1);
+      html += `<button class="civic-tab-btn${isActive ? ' active' : ''}" data-tab="${tab}" onclick="event.stopPropagation();window.__civicSwitchTab&&window.__civicSwitchTab(this)" style="
+        padding:8px 12px;font-size:11px;font-weight:${isActive ? '600' : '500'};
+        color:${isActive ? cfg.color : '#64748b'};
+        background:none;border:none;cursor:pointer;
+        border-bottom:2px solid ${isActive ? cfg.color : 'transparent'};
+        transition:all .15s;white-space:nowrap
+      ">${tabLabel}</button>`;
+    }
+    html += `</div>`;
+
+    // ── Tab content panels ──
+    for (const tab of tabs) {
+      const isActive = tab === 'overview';
+      html += `<div class="civic-tab-panel" data-panel="${tab}" style="
+        padding:12px 14px;max-height:200px;overflow-y:auto;
+        display:${isActive ? 'block' : 'none'};
+      ">${buildTabContent(m, tab)}</div>`;
+    }
+
+    // ── Bottom action ──
+    html += `<div style="padding:8px 14px 12px;border-top:1px solid #f1f5f9">`;
+    html += `<button onclick="event.stopPropagation();window.__civicAskAI&&window.__civicAskAI('${escapeHtml(m.id || titleText)}','${m.type}')" style="
+      width:100%;padding:8px 0;border-radius:8px;border:none;cursor:pointer;
+      background:linear-gradient(135deg,${cfg.color},${cfg.color}dd);color:#fff;
+      font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;
+      transition:opacity .15s
+    " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+      ${CivicIcons.sparkle('w-3.5 h-3.5')} Ask AI about this
+    </button>`;
+    html += `</div>`;
+
+    html += `</div>`;
+    return html;
+  }
+
+  function applyFilters() {
+    layerGroup.clearLayers();
+    let count = 0;
+    for (const { marker, data } of allMarkers) {
+      if (!activeFilters.types.has(data.type)) continue;
+      if (activeFilters.zone !== 'all' && data.zone !== activeFilters.zone) continue;
+      if (activeFilters.status !== 'all' && data.status !== activeFilters.status) continue;
+      layerGroup.addLayer(marker);
+      count++;
+    }
+    const countEl = mapOverlay?.querySelector('#map-count');
+    if (countEl) countEl.textContent = `${count} items shown`;
+  }
+
+  async function loadMapData() {
+    try {
+      const res = await fetch('/api/map-data');
+      const data = await res.json();
+      if (!data.markers) return { markers: [], center: { lat: 42.2586, lng: -87.8407 }, bounds: {} };
+      return data;
+    } catch (e) {
+      return { markers: [], center: { lat: 42.2586, lng: -87.8407 }, bounds: {} };
+    }
+  }
+
+  function renderMap() {
+    if (mapOverlay) mapOverlay.remove();
+
+    mapOverlay = document.createElement('div');
+    mapOverlay.id = 'civic-map-overlay';
+    mapOverlay.className = 'fixed inset-0 z-50 flex flex-col';
+    mapOverlay.style.cssText = 'animation: fadeIn 0.3s ease-out; font-family: system-ui, sans-serif;';
+
+    mapOverlay.innerHTML = `
+      <style>
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes heroReveal { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: scale(1); } }
+
+        /* ── Strip Leaflet popup defaults ── */
+        .civic-popup-card .leaflet-popup-content-wrapper {
+          padding: 0; margin: 0; border-radius: 14px;
+          box-shadow: 0 16px 48px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.1);
+          overflow: hidden;
+        }
+
+        /* ── Hero image section ── */
+        .civic-hero { animation: heroReveal 0.4s ease-out; }
+        .civic-hero svg { pointer-events: none; }
+        .civic-popup-card .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+        .civic-popup-card .leaflet-popup-tip-container { display: none; }
+        .civic-popup-card .leaflet-popup-close-button { display: none; }
+
+        /* ── Tab bar hover/active ── */
+        .civic-tab-btn:hover { color: #0f172a !important; background: #f8fafc !important; }
+        .civic-tab-btn.active { font-weight: 600 !important; }
+
+        /* ── Scrollbar inside tab panels ── */
+        .civic-tab-panel::-webkit-scrollbar { width: 4px; }
+        .civic-tab-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .civic-tab-panel::-webkit-scrollbar-track { background: transparent; }
+
+        .legend-item { display: flex; align-items: center; gap: 6px; padding: 4px 0; cursor: pointer; transition: opacity 0.2s; }
+        .legend-item.disabled { opacity: 0.3; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid; flex-shrink: 0; }
+        .filter-chip { padding: 4px 10px; border-radius: 99px; font-size: 11px; cursor: pointer; transition: all 0.2s; border: 1.5px solid; }
+        .filter-chip.active { font-weight: 600; }
+
+        /* Bottom bar: hidden by default, shown on mobile */
+        .map-bottom-bar { display: none; }
+        /* Legend sidebar toggle */
+        #map-legend-panel.legend-closed { transform: translateX(-100%) !important; }
+
+        /* ── Mobile map overrides ── */
+        @media (max-width: 767px) {
+          /* Reposition zoom controls above bottom bar */
+          .leaflet-top.leaflet-left { left: auto !important; right: 10px !important; top: auto !important; bottom: 80px !important; }
+          .leaflet-control-zoom { margin: 0 !important; border-radius: 12px !important; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important; }
+          .leaflet-control-zoom a { width: 40px !important; height: 40px !important; line-height: 40px !important; font-size: 18px !important; }
+          /* Smaller, mobile-friendly popups */
+          .civic-popup-card .leaflet-popup-content-wrapper { border-radius: 10px; }
+          .civic-card-popup { min-width: 240px !important; max-width: calc(100vw - 40px) !important; }
+          .civic-card-popup .civic-tab-panel { max-height: 160px !important; }
+          .civic-card-popup .civic-hero { height: 100px !important; }
+          /* Compact header */
+          .map-header { padding: 8px 10px !important; gap: 6px !important; }
+          .map-header .map-title { font-size: 13px !important; }
+          .map-header .map-filters { gap: 6px !important; }
+          .map-header .map-filters select { padding: 4px 6px !important; font-size: 11px !important; }
+          /* Hide close and AI chat from header on mobile */
+          .map-header #map-close { display: none !important; }
+          .map-header #map-chat-btn { display: none !important; }
+          /* Bottom action bar - use very high z-index to sit above Leaflet panes */
+          .map-bottom-bar { display: flex !important; position: fixed !important; z-index: 10000 !important; }
+          /* Add padding so map content not hidden behind bottom bar */
+          #leaflet-map { padding-bottom: 0; }
+        }
+      </style>
+
+      <!-- Header -->
+      <header class="map-header bg-white border-b px-3 md:px-4 py-2 md:py-2.5 flex flex-wrap items-center gap-2 md:gap-3 shadow-sm z-10">
+        <button id="map-legend-toggle" class="md:hidden w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 shrink-0" title="Toggle legend">${CivicIcons.menu('w-4 h-4')}</button>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center text-white font-bold text-xs shrink-0">${CivicIcons.map('w-5 h-5')}</div>
+        <div class="flex-1 min-w-0">
+          <h1 class="map-title text-sm md:text-base font-bold text-gray-900 truncate">Infrastructure Map</h1>
+          <p class="text-gray-400 text-[10px]" id="map-count">Loading...</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="map-filters flex items-center gap-2 order-last w-full md:w-auto md:order-none">
+          <select id="map-zone-filter" class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 flex-1 md:flex-none focus:outline-none focus:ring-1 focus:ring-teal-500">
+            <option value="all">All Zones</option>
+            <option value="NW-3">NW-3</option>
+            <option value="NE-1">NE-1</option>
+            <option value="SE-2">SE-2</option>
+            <option value="SW-1">SW-1</option>
+          </select>
+          <select id="map-status-filter" class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 flex-1 md:flex-none focus:outline-none focus:ring-1 focus:ring-teal-500">
+            <option value="all">All Statuses</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <button id="map-chat-btn" onclick="window.__civicOpenMapChat&&window.__civicOpenMapChat()" class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-sm font-medium transition-all shrink-0 hover:opacity-90" style="min-height:36px;background:linear-gradient(135deg,#00796b,#004d47)" title="Ask AI about the map (Ctrl+Shift+K)"><span class="material-symbols-outlined" style="font-size:18px">smart_toy</span> <span class="hidden sm:inline">AI Chat</span></button>
+        <button id="map-close" class="flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 text-sm font-medium transition-all shrink-0" style="min-height:36px" title="Close map"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> <span class="hidden sm:inline">Close</span></button>
+      </header>
+
+      <!-- Map + Legend -->
+      <div class="flex-1 flex relative">
+        <!-- Legend backdrop (mobile) -->
+        <div id="map-legend-backdrop" class="hidden md:hidden fixed inset-0 bg-black/30" style="z-index:400"></div>
+        <!-- Legend sidebar -->
+        <div id="map-legend-panel" class="w-48 bg-white border-r p-3 overflow-y-auto shrink-0 absolute md:relative inset-y-0 left-0 md:translate-x-0 transition-transform duration-200 shadow-lg md:shadow-none" style="z-index:500">
+          <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Layers</div>
+          ${Object.entries(MARKER_CONFIG).map(([key, cfg]) => `
+            <div class="legend-item" data-type="${key}">
+              <div class="legend-dot" style="background:${cfg.fillColor};border-color:${cfg.color}"></div>
+              <span class="text-xs text-gray-700">${cfg.icon} ${cfg.label}</span>
+            </div>
+          `).join('')}
+
+          <div class="border-t border-gray-100 my-3"></div>
+          <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Status Colors</div>
+          ${Object.entries(STATUS_COLORS).map(([status, color]) => `
+            <div class="flex items-center gap-1.5 py-1">
+              <div class="w-2.5 h-2.5 rounded-full" style="background:${color}"></div>
+              <span class="text-[10px] text-gray-500">${status.replace(/_/g, ' ')}</span>
+            </div>
+          `).join('')}
+
+          <div class="border-t border-gray-100 my-3"></div>
+          <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Quick Stats</div>
+          <div id="map-stats" class="space-y-1"></div>
+
+
+        </div>
+
+        <!-- Map container -->
+        <div id="leaflet-map" class="flex-1"></div>
+      </div>
+
+      <!-- Bottom action bar (mobile only) -->
+      <div class="map-bottom-bar" style="bottom:0;left:0;right:0;background:rgba(255,255,255,0.97);border-top:1px solid #e5e7eb;padding:10px 16px;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -2px 16px rgba(0,0,0,0.08);backdrop-filter:blur(12px)">
+        <button id="map-bb-close" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-radius:12px;border:1.5px solid #e2e8f0;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,0.06)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> Close</button>
+        <button id="map-bb-chat" onclick="window.__civicOpenMapChat&&window.__civicOpenMapChat()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-radius:12px;border:none;background:linear-gradient(135deg,#00796b,#004d47);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px;flex:1;max-width:180px;transition:all .2s;box-shadow:0 4px 12px rgba(0,121,107,0.3)"><span class="material-symbols-outlined" style="font-size:18px">smart_toy</span> AI Chat</button>
+      </div>
+    `;
+
+    document.body.appendChild(mapOverlay);
+
+    // Hide bottom nav & chat FAB when map is open
+    const bottomNav = document.getElementById('mobile-bottom-nav');
+    const chatFab = document.getElementById('chat-fab');
+    if (bottomNav) bottomNav.style.display = 'none';
+    if (chatFab) chatFab.style.display = 'none';
+
+    // Wire close
+    const closeMap = () => {
+      if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+      boundaryLayer = null;
+      fittedRef = false;
+      mapOverlay.remove();
+      mapOverlay = null;
+      allMarkers = [];
+      layerGroup = null;
+      // Restore bottom nav & chat FAB
+      if (bottomNav) bottomNav.style.display = '';
+      if (chatFab) chatFab.style.display = '';
+      // Reset bottom nav back to Home
+      if (window.resetNavToHome) window.resetNavToHome();
+    };
+    mapOverlay.querySelector('#map-close').onclick = closeMap;
+    const mapBBClose = mapOverlay.querySelector('#map-bb-close');
+    if (mapBBClose) mapBBClose.onclick = closeMap;
+
+    // Wire legend toggle (mobile)
+    const legendToggle = mapOverlay.querySelector('#map-legend-toggle');
+    const legendPanel = mapOverlay.querySelector('#map-legend-panel');
+    const legendBackdrop = mapOverlay.querySelector('#map-legend-backdrop');
+    if (legendToggle && legendPanel) {
+      // Start closed on mobile
+      legendPanel.classList.add('legend-closed');
+      const closeLegend = () => { legendPanel.classList.add('legend-closed'); if (legendBackdrop) legendBackdrop.classList.add('hidden'); };
+      legendToggle.onclick = () => {
+        const isOpen = !legendPanel.classList.contains('legend-closed');
+        if (isOpen) {
+          closeLegend();
+        } else {
+          legendPanel.classList.remove('legend-closed');
+          if (legendBackdrop) legendBackdrop.classList.remove('hidden');
+        }
+      };
+      if (legendBackdrop) legendBackdrop.onclick = closeLegend;
+    }
+
+    // Wire legend toggles
+    mapOverlay.querySelectorAll('.legend-item').forEach(item => {
+      const type = item.dataset.type;
+      // Set initial disabled state based on active filters
+      if (!activeFilters.types.has(type)) item.classList.add('disabled');
+      item.onclick = () => {
+        if (activeFilters.types.has(type)) {
+          activeFilters.types.delete(type);
+          item.classList.add('disabled');
+        } else {
+          activeFilters.types.add(type);
+          item.classList.remove('disabled');
+        }
+        applyFilters();
+      };
+    });
+
+    // Wire zone/status filters
+    mapOverlay.querySelector('#map-zone-filter').onchange = (e) => {
+      activeFilters.zone = e.target.value;
+      applyFilters();
+    };
+    mapOverlay.querySelector('#map-status-filter').onchange = (e) => {
+      activeFilters.status = e.target.value;
+      applyFilters();
+    };
+
+    // Keyboard close
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        mapOverlay?.querySelector('#map-close')?.click();
+        document.removeEventListener('keydown', onKey);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+  }
+
+  async function initMap() {
+    renderMap();
+    fittedRef = false;
+
+    const data = await loadMapData();
+
+    // Initialize Leaflet with MAP_CONFIG center & zoom
+    leafletMap = L.map('leaflet-map', {
+      center: MAP_CONFIG.center,
+      zoom: MAP_CONFIG.zoom,
+      zoomControl: false,
+    });
+
+    // Custom zoom + home control
+    const CustomZoomHome = L.Control.extend({
+      options: { position: 'topleft' },
+      onAdd: function () {
+        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+        container.style.cssText = 'border:2px solid rgba(0,0,0,0.2);border-radius:4px;overflow:hidden;';
+        // Home button
+        const home = L.DomUtil.create('a', '', container);
+        home.href = '#';
+        home.title = 'Reset view to Lake Forest';
+        home.setAttribute('role', 'button');
+        home.setAttribute('aria-label', 'Reset view');
+        home.style.cssText = 'display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:#fff;border-bottom:1px solid #ccc;cursor:pointer;';
+        home.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00796b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+        home.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (boundaryLayer) {
+            leafletMap.fitBounds(boundaryLayer.getBounds(), { padding: MAP_CONFIG.fitPadding, maxZoom: MAP_CONFIG.fitMaxZoom });
+          } else {
+            leafletMap.flyTo(MAP_CONFIG.center, MAP_CONFIG.zoom);
+          }
+        };
+        // Zoom in
+        const zoomIn = L.DomUtil.create('a', '', container);
+        zoomIn.href = '#';
+        zoomIn.title = 'Zoom in';
+        zoomIn.setAttribute('role', 'button');
+        zoomIn.setAttribute('aria-label', 'Zoom in');
+        zoomIn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:#fff;border-bottom:1px solid #ccc;cursor:pointer;font-size:18px;font-weight:bold;color:#333;';
+        zoomIn.textContent = '+';
+        zoomIn.onclick = function (e) { e.preventDefault(); e.stopPropagation(); leafletMap.zoomIn(); };
+        // Zoom out
+        const zoomOut = L.DomUtil.create('a', '', container);
+        zoomOut.href = '#';
+        zoomOut.title = 'Zoom out';
+        zoomOut.setAttribute('role', 'button');
+        zoomOut.setAttribute('aria-label', 'Zoom out');
+        zoomOut.style.cssText = 'display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:#fff;cursor:pointer;font-size:18px;font-weight:bold;color:#333;';
+        zoomOut.textContent = '\u2212';
+        zoomOut.onclick = function (e) { e.preventDefault(); e.stopPropagation(); leafletMap.zoomOut(); };
+        L.DomEvent.disableClickPropagation(container);
+        return container;
+      }
+    });
+    leafletMap.addControl(new CustomZoomHome());
+
+    // OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: MAP_CONFIG.maxZoom,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(leafletMap);
+
+    // ── Draw boundary polygon ──
+    if (MAP_CONFIG.boundary && MAP_CONFIG.boundary.length > 2) {
+      boundaryLayer = L.polygon(MAP_CONFIG.boundary, {
+        color: '#0d9488',
+        weight: 2,
+        opacity: 0.6,
+        fillColor: '#0d9488',
+        fillOpacity: 0.04,
+        dashArray: '6, 4',
+        interactive: false,
+      }).addTo(leafletMap);
+    }
+
+    // Create layer group
+    layerGroup = L.layerGroup().addTo(leafletMap);
+
+    // Add markers
+    allMarkers = [];
+    const typeCounts = {};
+
+    for (const m of data.markers) {
+      const marker = createCircleMarker(m);
+      allMarkers.push({ marker, data: m });
+      typeCounts[m.type] = (typeCounts[m.type] || 0) + 1;
+    }
+
+    // Reset filters — residents see only service requests + schools
+    activeFilters = { types: new Set(window.staffAuthToken ? Object.keys(MARKER_CONFIG) : ['service_request', 'school']), zone: 'all', status: 'all' };
+    applyFilters();
+
+    // Quick stats
+    const statsEl = mapOverlay.querySelector('#map-stats');
+    if (statsEl) {
+      statsEl.innerHTML = Object.entries(typeCounts).map(([type, count]) => {
+        const cfg = MARKER_CONFIG[type];
+        return `<div class="flex items-center justify-between">
+          <span class="text-[10px] text-gray-500">${cfg?.icon || ''} ${cfg?.label || type}</span>
+          <span class="text-[10px] font-bold text-gray-700">${count}</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Initial fit on load ──
+    // Fit the boundary polygon (preferred) or marker group, only once
+    setTimeout(() => {
+      leafletMap.invalidateSize();
+      if (!fittedRef) {
+        fittedRef = true;
+        if (boundaryLayer) {
+          leafletMap.fitBounds(boundaryLayer.getBounds(), {
+            padding: MAP_CONFIG.fitPadding,
+            maxZoom: MAP_CONFIG.fitMaxZoom,
+          });
+        } else if (allMarkers.length > 0) {
+          const group = L.featureGroup(allMarkers.map(m => m.marker));
+          leafletMap.fitBounds(group.getBounds(), {
+            padding: MAP_CONFIG.fitPadding,
+            maxZoom: MAP_CONFIG.fitMaxZoom,
+          });
+        }
+      }
+    }, 100);
+
+    // Home button is now part of the custom zoom control on the map
+
+
+  }
+
+  // ─── Tab switching for popups ────────────────────
+  window.__civicSwitchTab = function (btn) {
+    const popup = btn.closest('.civic-card-popup');
+    if (!popup) return;
+    const tab = btn.dataset.tab;
+    // Get the type color from the stripe
+    const stripe = popup.querySelector('div[style*="linear-gradient"]');
+    const color = stripe ? stripe.style.background.match(/#[0-9a-fA-F]{6}/)?.[0] || '#6366f1' : '#6366f1';
+
+    // Update tab buttons
+    popup.querySelectorAll('.civic-tab-btn').forEach(b => {
+      const isThis = b.dataset.tab === tab;
+      b.classList.toggle('active', isThis);
+      b.style.fontWeight = isThis ? '600' : '500';
+      b.style.color = isThis ? color : '#64748b';
+      b.style.borderBottom = `2px solid ${isThis ? color : 'transparent'}`;
+    });
+    // Show/hide panels
+    popup.querySelectorAll('.civic-tab-panel').forEach(p => {
+      p.style.display = p.dataset.panel === tab ? 'block' : 'none';
+    });
+  };
+
+  // ─── Ask AI about a marker ─────────────────────
+  window.__civicAskAI = function (id, type) {
+    const typeLabel = MARKER_CONFIG[type]?.label || type;
+    let query;
+    if (type === 'service_request') {
+      query = `Track service request ${id}. What is the current status and any updates?`;
+    } else if (type === 'work_order') {
+      query = `What is the status of work order ${id}? Include priority, cost, and crew assignment.`;
+    } else if (type === 'pothole') {
+      query = `Give me a priority analysis for pothole ${id}. Include severity, school proximity, and any linked work orders.`;
+    } else if (type === 'sidewalk') {
+      query = `Give me details on sidewalk issue ${id}. Include severity, ADA compliance, and any linked work orders.`;
+    } else if (type === 'school') {
+      query = `What infrastructure issues are near ${id}? Show any nearby potholes, sidewalk issues, or open work orders.`;
+    } else {
+      query = `Tell me about ${typeLabel} ${id} — current status, priority, and related issues.`;
+    }
+
+    // Chat opens on top of the map (z-60 over z-50 map overlay)
+
+    // Open the chat widget if it's not already open
+    if (typeof window.toggleChatWidget === 'function') {
+      const widget = document.getElementById('chat-widget');
+      if (widget && widget.classList.contains('hidden')) {
+        window.toggleChatWidget();
+      }
+    }
+
+    // Set input and submit via the same mechanism askSuggestion uses
+    setTimeout(() => {
+      const input = document.getElementById('chat-input');
+      const form = document.getElementById('chat-form');
+      if (input && form) {
+        input.value = query;
+        form.dispatchEvent(new Event('submit'));
+      }
+    }, 350);
+  };
+
+  // ─── Open chat from map header button ──────────
+  window.__civicOpenMapChat = function () {
+    if (typeof window.toggleChatWidget === 'function') {
+      const widget = document.getElementById('chat-widget');
+      if (widget && widget.classList.contains('hidden')) {
+        window.toggleChatWidget();
+      }
+    }
+    // Update chat context to reflect map view
+    const ctxText = document.getElementById('chat-context-text');
+    if (ctxText) ctxText.textContent = 'Community Insights \u2014 Ask about the map';
+    setTimeout(() => {
+      const input = document.getElementById('chat-input');
+      if (input) input.focus();
+    }, 350);
+  };
+
+  // ─── Public API ────────────────────────────────
+  window.openCivicMap = initMap;
+  window.closeCivicMap = function () {
+    if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+    boundaryLayer = null;
+    fittedRef = false;
+    if (mapOverlay) { mapOverlay.remove(); mapOverlay = null; }
+    allMarkers = [];
+    layerGroup = null;
+    // Restore bottom nav & chat FAB
+    const bottomNav = document.querySelector('.bottom-nav');
+    const chatFab = document.getElementById('chat-fab');
+    if (bottomNav) bottomNav.style.display = '';
+    if (chatFab) chatFab.style.display = '';
+  };
+})();

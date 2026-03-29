@@ -1,0 +1,9 @@
+# Azure Developer CLI (azd) manifest
+name: civiclens
+metadata:
+  template: civiclens@0.0.1
+services:
+  web:
+    project: .
+    language: js
+    host: appservice

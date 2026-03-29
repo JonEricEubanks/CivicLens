@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Module Test</title>
+  </head>
+  <body>
+    <h2>Module Load Test</h2>
+    <pre
+      id="log"
+      style="background: #111; color: #0f0; padding: 20px; font-size: 14px"
+    ></pre>
+    <script>
+      const log = document.getElementById("log");
+      function addLog(msg) {
+        log.textContent += msg + "\n";
+      }
+
+      window.onerror = (msg, src, line, col, err) => {
+        addLog("GLOBAL ERROR: " + msg + " at " + src + ":" + line);
+      };
+
+      addLog("Starting module load test...");
+      addLog("window.openDashboard before: " + typeof window.openDashboard);
+      addLog(
+        "window.openReportGenerator before: " +
+          typeof window.openReportGenerator,
+      );
+    </script>
+    <script type="module">
+      const log = document.getElementById("log");
+      function addLog(msg) {
+        log.textContent += msg + "\n";
+      }
+
+      try {
+        await import("/nlp-dashboard.js");
+        addLog("nlp-dashboard.js: LOADED OK");
+      } catch (e) {
+        addLog("nlp-dashboard.js: LOAD ERROR: " + e.message);
+        addLog("  Stack: " + e.stack);
+      }
+
+      try {
+        await import("/report-generator.js");
+        addLog("report-generator.js: LOADED OK");
+      } catch (e) {
+        addLog("report-generator.js: LOAD ERROR: " + e.message);
+        addLog("  Stack: " + e.stack);
+      }
+
+      addLog("window.openDashboard after: " + typeof window.openDashboard);
+      addLog(
+        "window.openReportGenerator after: " +
+          typeof window.openReportGenerator,
+      );
+      addLog("");
+      addLog("Testing openDashboard...");
+      try {
+        window.openDashboard();
+        addLog("openDashboard: CALLED OK - overlay created");
+        setTimeout(() => {
+          window.closeDashboard();
+          addLog("closeDashboard: CALLED OK");
+        }, 1000);
+      } catch (e) {
+        addLog("openDashboard ERROR: " + e.message);
+        addLog("  Stack: " + e.stack);
+      }
+    </script>
+  </body>
+</html>

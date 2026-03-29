@@ -1,0 +1,72 @@
+[
+  {
+    "id": "SCH-001",
+    "name": "Deer Path Middle School",
+    "type": "middle",
+    "location": {
+      "address": "95 W Deerpath, Lake Forest, IL",
+      "lat": 42.247974,
+      "lng": -87.849957,
+      "zone": "NW-3"
+    },
+    "enrollment": 520,
+    "walk_zone_radius_ft": 5280,
+    "principal": "Robert Chen"
+  },
+  {
+    "id": "SCH-002",
+    "name": "Lake Forest High School",
+    "type": "high",
+    "location": {
+      "address": "1285 N McKinley Rd, Lake Forest, IL",
+      "lat": 42.264444,
+      "lng": -87.840393,
+      "zone": "NW-3"
+    },
+    "enrollment": 1650,
+    "walk_zone_radius_ft": 5280,
+    "principal": "Dr. Angela Dominguez"
+  },
+  {
+    "id": "SCH-003",
+    "name": "Everett Elementary School",
+    "type": "elementary",
+    "location": {
+      "address": "1111 N Everett Ave, Lake Forest, IL",
+      "lat": 42.216238,
+      "lng": -87.874571,
+      "zone": "SW-1"
+    },
+    "enrollment": 380,
+    "walk_zone_radius_ft": 2640,
+    "principal": "Dr. Sarah Mitchell"
+  },
+  {
+    "id": "SCH-004",
+    "name": "Cherokee Elementary School",
+    "type": "elementary",
+    "location": {
+      "address": "500 W Deerpath, Lake Forest, IL",
+      "lat": 42.225531,
+      "lng": -87.835695,
+      "zone": "SE-2"
+    },
+    "enrollment": 310,
+    "walk_zone_radius_ft": 2640,
+    "principal": "Marcus Thompson"
+  },
+  {
+    "id": "SCH-005",
+    "name": "Sheridan Elementary School",
+    "type": "elementary",
+    "location": {
+      "address": "999 N Sheridan Rd, Lake Forest, IL",
+      "lat": 42.264320,
+      "lng": -87.835778,
+      "zone": "NE-1"
+    },
+    "enrollment": 290,
+    "walk_zone_radius_ft": 2640,
+    "principal": "Jennifer Walsh"
+  }
+]

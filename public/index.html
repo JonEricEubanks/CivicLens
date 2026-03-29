@@ -1,0 +1,3476 @@
+﻿<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>CivicLens — Community Infrastructure Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/vendor/marked.min.js"></script>
+    <script src="/vendor/purify.min.js"></script>
+    <script src="/vendor/chart.js"></script>
+    <link rel="stylesheet" href="/vendor/leaflet.css" />
+    <script src="/vendor/leaflet.js"></script>
+    <script src="/icons.js"></script>
+    <script src="/civic-utils.js"></script>
+    <script>
+      // Register service worker for offline caching
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+    </script>
+    <style>
+      :root {
+        --md-primary: #091426;
+        --md-on-primary: #ffffff;
+        --md-secondary: #006a61;
+        --md-on-secondary: #ffffff;
+        --md-tertiary: #3b82f6;
+        --md-surface: #f9f9ff;
+        --md-surface-container: #edeef4;
+        --md-surface-container-low: #f3f3f9;
+        --md-surface-container-high: #e7e8ee;
+        --md-on-surface: #1a1c1e;
+        --md-on-surface-variant: #43474e;
+        --md-outline: #73777f;
+        --md-outline-variant: #c3c6cf;
+        --md-inverse-surface: #2e3135;
+        --md-shadow: rgba(0, 0, 0, 0.08);
+        --md-radius-sm: 0.75rem;
+        --md-radius-md: 1rem;
+        --md-radius-lg: 1.5rem;
+        --md-radius-xl: 2rem;
+        --md-radius-full: 9999px;
+        --sidebar-width: 300px;
+        --sidebar-collapsed-width: 72px;
+      }
+
+      /* ── Staff Action Pill Buttons ── */
+      .staff-action-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1.5px solid;
+      }
+      .staff-action-pill:hover { filter: brightness(0.95); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+      /* ── Dark Mode ── */
+      [data-theme="dark"] {
+        --md-primary: #c5cae8;
+        --md-on-primary: #091426;
+        --md-secondary: #4db6ac;
+        --md-on-secondary: #003731;
+        --md-tertiary: #60a5fa;
+        --md-surface: #111318;
+        --md-surface-container: #1d1f25;
+        --md-surface-container-low: #171921;
+        --md-surface-container-high: #272930;
+        --md-on-surface: #e2e3e9;
+        --md-on-surface-variant: #c3c6cf;
+        --md-outline: #8d9099;
+        --md-outline-variant: #43474e;
+        --md-inverse-surface: #e2e3e9;
+        --md-shadow: rgba(0, 0, 0, 0.3);
+      }
+      [data-theme="dark"] .bg-white {
+        background: var(--md-surface-container) !important;
+      }
+      [data-theme="dark"] .shadow-sm,
+      [data-theme="dark"] .shadow-md {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      }
+      [data-theme="dark"] .border {
+        border-color: var(--md-outline-variant) !important;
+      }
+      [data-theme="dark"] .text-white {
+        color: #e2e3e9 !important;
+      }
+      [data-theme="dark"] .prose {
+        color: var(--md-on-surface) !important;
+      }
+      [data-theme="dark"] .bg-blue-50,
+      [data-theme="dark"] .bg-purple-50,
+      [data-theme="dark"] .bg-green-50,
+      [data-theme="dark"] .bg-amber-50 {
+        background: var(--md-surface-container) !important;
+      }
+      * {
+        transition:
+          background-color var(--transition-speed) ease,
+          color var(--transition-speed) ease,
+          border-color var(--transition-speed) ease;
+      }
+
+      body,
+      html {
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      .font-display {
+        font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      .material-symbols-outlined.filled {
+        font-variation-settings:
+          "FILL" 1,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+
+      /* Prose */
+      .prose h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .prose h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0.75rem 0 0.25rem;
+        color: var(--md-on-surface);
+      }
+      .prose h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0.5rem 0 0.25rem;
+        color: var(--md-on-surface-variant);
+      }
+      .prose p {
+        margin: 0.5rem 0;
+        line-height: 1.6;
+      }
+      .prose ol,
+      .prose ul {
+        margin: 0.25rem 0;
+        padding-left: 1.5rem;
+      }
+      .prose li {
+        margin: 0.15rem 0;
+      }
+      .prose hr {
+        margin: 1rem 0;
+        border-color: var(--md-outline-variant);
+      }
+      .prose em {
+        color: var(--md-on-surface-variant);
+        font-size: 0.85rem;
+      }
+      .prose strong {
+        color: var(--md-on-surface);
+      }
+
+      /* Animations (preserved) */
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .thinking-dot {
+        animation: pulse-dot 1.4s infinite;
+      }
+      .thinking-dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .thinking-dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes stage-enter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .stage-animate {
+        animation: stage-enter 0.35s ease-out forwards;
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          box-shadow: 0 0 0 0 rgba(0, 106, 97, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 8px rgba(0, 106, 97, 0);
+        }
+      }
+      .pulse-active {
+        animation: pulse-ring 1.5s infinite;
+      }
+
+      @keyframes flow-dash {
+        to {
+          stroke-dashoffset: -20;
+        }
+      }
+      .flow-line-animated {
+        stroke-dasharray: 8 4;
+        animation: flow-dash 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .spinner {
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes bar-fill {
+        from {
+          width: 0;
+        }
+      }
+      .bar-animate {
+        animation: bar-fill 0.6s ease-out forwards;
+      }
+
+      /* Stage cards */
+      .stage-card {
+        transition: all 0.3s ease;
+        border-radius: var(--md-radius-md);
+      }
+      .stage-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--md-shadow);
+      }
+      .stage-card.running {
+        border-color: var(--md-secondary);
+        background: linear-gradient(135deg, #e6f5f3 0%, #ccebe8 100%);
+      }
+      .stage-card.completed {
+        border-color: #22c55e;
+      }
+      .stage-card.waiting {
+        opacity: 0.5;
+      }
+      .stage-card.error {
+        border-color: #ef4444;
+        background: #fef2f2;
+      }
+
+      .detail-expand {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .detail-expand.open {
+        max-height: 500px;
+      }
+
+      .waterfall-bar {
+        transition: width 0.5s ease-out;
+        border-radius: 0 4px 4px 0;
+      }
+
+      /* ── Inline Pipeline Tracker ── */
+      .ip-container {
+        border-radius: 14px;
+        border: 1px solid var(--md-outline-variant);
+        overflow: hidden;
+        background: var(--md-surface);
+      }
+      .ip-header {
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border-bottom: 1px solid var(--md-outline-variant);
+        background: linear-gradient(135deg, #e8f5f3 0%, #f0faf9 100%);
+      }
+      .ip-flow-row {
+        padding: 10px 16px 8px;
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      .ip-flow-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--md-outline-variant);
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+      }
+      .ip-flow-dot svg {
+        width: 10px;
+        height: 10px;
+      }
+      .ip-flow-dot.running {
+        border-color: var(--md-secondary);
+        background: #e6f5f3;
+        animation: pulse-ring 1.5s infinite;
+      }
+      .ip-flow-dot.completed {
+        border-color: #22c55e;
+        background: #dcfce7;
+      }
+      .ip-connector {
+        flex: 1;
+        height: 2px;
+        background: var(--md-outline-variant);
+        transition: all 0.3s ease;
+        min-width: 8px;
+      }
+      .ip-connector.done {
+        background: #22c55e;
+      }
+      .ip-stages {
+        padding: 4px 8px 8px;
+      }
+      .ip-stage-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        border-radius: 8px;
+        margin-bottom: 2px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+      }
+      .ip-stage-row.running {
+        background: #e8f5f3;
+        border-color: color-mix(in srgb, var(--md-secondary) 30%, transparent);
+      }
+      .ip-stage-row.completed {
+        background: #f0fdf4;
+      }
+      .ip-stage-row.waiting {
+        opacity: 0.35;
+      }
+      .ip-stage-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .ip-stage-icon svg {
+        width: 12px;
+        height: 12px;
+      }
+      .ip-stage-row.running .ip-stage-icon {
+        background: var(--md-secondary);
+        color: white;
+      }
+      .ip-stage-row.completed .ip-stage-icon {
+        background: #22c55e;
+        color: white;
+      }
+      .ip-stage-row.waiting .ip-stage-icon {
+        background: var(--md-surface-container);
+        color: var(--md-outline);
+      }
+      .ip-detail-text {
+        font-size: 10px;
+        color: var(--md-outline);
+        margin-top: 1px;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 260px;
+      }
+      .ip-detail-text .ip-tag {
+        display: inline-block;
+        padding: 0px 5px;
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 500;
+        margin: 0 1px;
+      }
+      /* Collapsed state */
+      .ip-collapsed-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--md-outline-variant);
+        background: var(--md-surface);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .ip-collapsed-bar:hover {
+        background: #e8f5f3;
+        border-color: var(--md-secondary);
+      }
+      .ip-collapsed-bar .ip-mini-dots {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+      }
+      .ip-collapsed-bar .ip-mini-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #22c55e;
+      }
+      .ip-collapsed-chevron {
+        transition: transform 0.2s ease;
+        margin-left: auto;
+      }
+      .ip-collapsed-chevron.open {
+        transform: rotate(180deg);
+      }
+      .ip-expanded-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+      }
+      .ip-expanded-body.open {
+        max-height: 600px;
+      }
+      [data-theme="dark"] .ip-container {
+        background: var(--md-surface);
+      }
+      [data-theme="dark"] .ip-header {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 106, 97, 0.12),
+          rgba(0, 106, 97, 0.05)
+        );
+      }
+      [data-theme="dark"] .ip-stage-row.running {
+        background: rgba(0, 106, 97, 0.1);
+      }
+      [data-theme="dark"] .ip-stage-row.completed {
+        background: rgba(34, 197, 94, 0.06);
+      }
+      [data-theme="dark"] .ip-collapsed-bar {
+        background: var(--md-surface);
+      }
+      [data-theme="dark"] .ip-collapsed-bar:hover {
+        background: rgba(0, 106, 97, 0.08);
+      }
+
+      /* ── Side Navigation (Desktop) ── */
+      .side-nav {
+        width: var(--sidebar-width);
+        background: #f8fafb;
+        border-right: 1px solid var(--md-outline-variant);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 30;
+        padding: 1.25rem 0.75rem;
+        overflow: hidden;
+        overflow-y: auto;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Sidebar tooltip */
+      .side-nav-item {
+        position: relative;
+      }
+
+      .side-nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .side-nav-brand .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--md-radius-md);
+        background: linear-gradient(135deg, var(--md-secondary), #004d47);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 106, 97, 0.25);
+      }
+      .side-nav-brand h1 {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: var(--md-on-surface);
+        letter-spacing: -0.02em;
+      }
+      .side-nav-brand p {
+        font-size: 0.7rem;
+        color: var(--md-on-surface-variant);
+        margin-top: 1px;
+      }
+      .side-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: var(--md-radius-full);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--md-on-surface-variant);
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+      }
+      .side-nav-item:hover {
+        background: var(--md-surface-container);
+      }
+      .side-nav-item.active {
+        background: #e0f2f1;
+        color: var(--md-secondary);
+        font-weight: 600;
+      }
+      .side-nav-item .material-symbols-outlined {
+        font-size: 24px;
+      }
+      .side-nav-spacer {
+        flex: 1;
+      }
+
+      /* Section label for utility group */
+      .side-nav-section-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--md-outline);
+        padding: 0.5rem 1rem 0.35rem;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity 0.2s ease;
+      }
+
+      /* Sidebar collapse toggle — inline with brand */
+      .side-nav-toggle {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: var(--md-radius-md);
+        border: none;
+        background: transparent;
+        color: var(--md-on-surface-variant);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin-left: auto;
+      }
+      .side-nav-toggle:hover {
+        background: var(--md-surface-container);
+        color: var(--md-secondary);
+      }
+      .side-nav-toggle .material-symbols-outlined {
+        font-size: 20px;
+        transition: transform 0.3s ease;
+      }
+
+      /* Collapsed sidebar */
+      .side-nav.collapsed {
+        width: var(--sidebar-collapsed-width);
+        padding: 1.25rem 0.5rem;
+      }
+      .side-nav.collapsed .side-nav-brand .brand-text {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .side-nav.collapsed .nav-label {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .side-nav.collapsed .side-nav-brand {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+      }
+      .side-nav.collapsed .side-nav-toggle {
+        margin-left: 0;
+      }
+      .side-nav.collapsed .side-nav-item {
+        justify-content: center;
+        padding: 0.75rem;
+        border-radius: var(--md-radius-md);
+      }
+      .side-nav.collapsed .side-nav-toggle .material-symbols-outlined {
+        transform: rotate(180deg);
+      }
+      .side-nav.collapsed .side-nav-section-label {
+        opacity: 0;
+        height: 0;
+        padding: 0;
+        margin: 0;
+        pointer-events: none;
+      }
+      /* Tooltip on hover when collapsed */
+      .side-nav.collapsed .side-nav-item::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--md-inverse-surface);
+        color: var(--md-surface);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+        z-index: 100;
+        box-shadow: 0 2px 8px var(--md-shadow);
+      }
+      .side-nav.collapsed .side-nav-item:hover::after {
+        opacity: 1;
+      }
+      .side-nav .brand-text,
+      .side-nav .nav-label {
+        transition: opacity 0.2s ease, width 0.3s ease;
+      }
+      .side-nav-section-label {
+        transition: opacity 0.2s ease, height 0.3s ease, padding 0.3s ease;
+      }
+      .main-with-sidenav {
+        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @media (max-width: 767px) {
+        .side-nav {
+          display: none;
+        }
+      }
+
+      /* Main content offset for side nav */
+      @media (min-width: 768px) {
+        .main-with-sidenav {
+          margin-left: var(--sidebar-width);
+        }
+        .side-nav.collapsed ~ .main-with-sidenav {
+          margin-left: var(--sidebar-collapsed-width);
+        }
+      }
+
+      /* ── Sidebar Dark Mode ── */
+      [data-theme="dark"] .side-nav {
+        background: #0d1117;
+        border-right-color: #21262d;
+      }
+      [data-theme="dark"] .side-nav-brand .logo {
+        background: linear-gradient(135deg, #4db6ac, #00897b);
+        box-shadow: 0 2px 12px rgba(77, 182, 172, 0.3);
+      }
+      [data-theme="dark"] .side-nav-brand h1 {
+        color: #e6edf3;
+      }
+      [data-theme="dark"] .side-nav-brand p {
+        color: #8b949e;
+      }
+      [data-theme="dark"] .side-nav-item {
+        color: #8b949e;
+      }
+      [data-theme="dark"] .side-nav-item:hover {
+        background: rgba(77, 182, 172, 0.08);
+        color: #c9d1d9;
+      }
+      [data-theme="dark"] .side-nav-item.active {
+        background: rgba(77, 182, 172, 0.15);
+        color: #4db6ac;
+      }
+      [data-theme="dark"] .side-nav-toggle {
+        color: #8b949e;
+      }
+      [data-theme="dark"] .side-nav-toggle:hover {
+        background: rgba(77, 182, 172, 0.08);
+        color: #4db6ac;
+      }
+      [data-theme="dark"] .side-nav-section-label {
+        color: #484f58;
+      }
+
+      /* ── Mobile top header ── */
+      .mobile-header {
+        background: rgba(249, 249, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--md-outline-variant);
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: sticky;
+        top: 0;
+        z-index: 35;
+      }
+      @media (min-width: 768px) {
+        .mobile-header {
+          display: none;
+        }
+      }
+
+      /* Mobile bottom nav */
+      .bottom-nav-item {
+        transition: all 0.2s ease;
+      }
+      .bottom-nav-item.active {
+        color: var(--md-secondary);
+      }
+      .bottom-nav-item.active .nav-indicator {
+        transform: scaleX(1);
+      }
+      .nav-indicator {
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
+      }
+
+      /* Pipeline drawer on mobile */
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      @keyframes slideOutRight {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(100%);
+        }
+      }
+      .drawer-enter {
+        animation: slideInRight 0.3s ease-out forwards;
+      }
+      .drawer-exit {
+        animation: slideOutRight 0.25s ease-in forwards;
+      }
+
+      @keyframes fadeSlideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .menu-animate {
+        animation: fadeSlideDown 0.2s ease-out forwards;
+      }
+
+      /* Suggestion chips */
+      .suggestion-chip {
+        transition: all 0.2s ease;
+        border-radius: var(--md-radius-full) !important;
+      }
+      .suggestion-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--md-shadow);
+      }
+      .suggestion-chip:active {
+        transform: scale(0.97);
+      }
+
+      /* Chat message animations */
+      @keyframes msgIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .msg-animate {
+        animation: msgIn 0.3s ease-out forwards;
+      }
+
+      /* Floating chat widget */
+      @keyframes chatSlideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      @keyframes chatSlideDown {
+        from {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+      }
+      .chat-open {
+        animation: chatSlideUp 0.25s ease-out forwards;
+      }
+      .chat-close {
+        animation: chatSlideDown 0.2s ease-in forwards;
+      }
+      @keyframes fabPulse {
+        0%,
+        100% {
+          box-shadow: 0 4px 20px rgba(0, 106, 97, 0.4);
+        }
+        50% {
+          box-shadow: 0 4px 30px rgba(0, 106, 97, 0.7);
+        }
+      }
+      .fab-pulse {
+        animation: fabPulse 2s ease-in-out infinite;
+      }
+
+      /* Dashboard cards */
+      .dash-card {
+        transition: all 0.2s ease;
+      }
+      .dash-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px var(--md-shadow);
+      }
+
+      .sr-create-card {
+        transition: all 0.2s ease;
+      }
+      .sr-create-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      }
+
+      /* ── Chat panel sizes ── */
+      #chat-widget .chat-panel {
+        transition:
+          width 0.3s ease,
+          height 0.3s ease,
+          border-radius 0.3s ease,
+          bottom 0.3s ease,
+          right 0.3s ease,
+          top 0.3s ease;
+      }
+
+      #chat-widget.chat-compact .chat-panel {
+        width: 380px;
+        height: min(78vh, 620px);
+        border-radius: var(--md-radius-xl);
+      }
+      @media (min-width: 640px) {
+        #chat-widget.chat-compact .chat-panel {
+          width: 420px;
+        }
+      }
+      @media (min-width: 768px) {
+        #chat-widget.chat-compact .chat-panel {
+          width: 460px;
+        }
+      }
+
+      #chat-widget.chat-expanded {
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: auto;
+        width: auto;
+      }
+      #chat-widget.chat-expanded .chat-panel {
+        width: min(580px, 90vw);
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
+      }
+      @media (min-width: 1024px) {
+        #chat-widget.chat-expanded .chat-panel {
+          width: 620px;
+        }
+      }
+
+      #chat-widget.chat-fullscreen {
+        inset: 0;
+        width: auto;
+      }
+      #chat-widget.chat-fullscreen .chat-panel {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        max-width: 100%;
+      }
+      #chat-widget.chat-fullscreen .chat-messages-col {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      #chat-widget.chat-expanded .prose,
+      #chat-widget.chat-fullscreen .prose {
+        font-size: 0.9rem;
+        line-height: 1.75;
+      }
+      #chat-widget.chat-expanded .prose h2,
+      #chat-widget.chat-fullscreen .prose h2 {
+        font-size: 1.15rem;
+        margin-top: 1rem;
+      }
+      #chat-widget.chat-expanded .prose h3,
+      #chat-widget.chat-fullscreen .prose h3 {
+        font-size: 1.05rem;
+      }
+      #chat-widget.chat-expanded .prose p,
+      #chat-widget.chat-fullscreen .prose p {
+        margin: 0.6rem 0;
+      }
+      #chat-widget.chat-expanded .prose li,
+      #chat-widget.chat-fullscreen .prose li {
+        margin: 0.25rem 0;
+      }
+
+      /* Hide inline pipeline in expanded/fullscreen since trace panel sidebar is visible */
+      #chat-widget.chat-expanded #inline-pipeline,
+      #chat-widget.chat-fullscreen #inline-pipeline {
+        display: none;
+      }
+
+      /* Wider trace panel in fullscreen/expanded modes */
+      #chat-widget.chat-fullscreen #trace-panel {
+        width: 420px;
+        min-width: 420px;
+      }
+      #chat-widget.chat-expanded #trace-panel {
+        width: 340px;
+        min-width: 340px;
+      }
+
+      /* Mobile pipeline button — only show in compact mode */
+      #chat-widget.chat-expanded #mobile-pipeline-btn,
+      #chat-widget.chat-fullscreen #mobile-pipeline-btn {
+        display: none !important;
+      }
+      #chat-widget.chat-compact #mobile-pipeline-btn {
+        display: flex !important;
+      }
+      @keyframes pipelinePulse {
+        0%,
+        100% {
+          border-color: var(--md-outline-variant);
+          background: var(--md-surface-container-low);
+        }
+        50% {
+          border-color: var(--md-secondary);
+          background: #e0f2f1;
+        }
+      }
+      #mobile-pipeline-btn.pipeline-active {
+        animation: pipelinePulse 1.5s ease-in-out infinite;
+        font-weight: 600;
+      }
+
+      .response-section {
+        border-left: 3px solid #e0f2f1;
+        padding-left: 0.75rem;
+        margin: 0.5rem 0;
+      }
+      .response-section-toggle {
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .response-section-toggle:hover {
+        color: var(--md-secondary);
+      }
+      .response-section-body {
+        max-height: 2000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .response-section-body.collapsed {
+        max-height: 0;
+      }
+
+      .context-badge {
+        background: linear-gradient(135deg, #e6f5f3 0%, #ccebe8 100%);
+      }
+      .context-chip {
+        transition: all 0.15s ease;
+        border-radius: var(--md-radius-full) !important;
+      }
+      .context-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px var(--md-shadow);
+      }
+      .context-chip:active {
+        transform: scale(0.97);
+      }
+
+      /* ═══ STAFF COMMAND CENTER STYLES ═══ */
+      .staff-kpi-strip {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      }
+      .staff-kpi-card {
+        transition: background 0.2s;
+      }
+      .staff-kpi-card:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+      .staff-tab {
+        color: var(--md-outline);
+        background: transparent;
+        border: 1px solid transparent;
+        cursor: pointer;
+      }
+      .staff-tab:hover {
+        background: #f1f5f9;
+        color: var(--md-on-surface);
+      }
+      .staff-tab.active {
+        background: var(--md-secondary);
+        color: white;
+        border-color: var(--md-secondary);
+      }
+      .staff-request-card {
+        background: white;
+        border: 1px solid var(--md-outline-variant);
+        border-radius: 12px;
+        padding: 12px;
+        transition: all 0.2s ease;
+        cursor: default;
+      }
+      .staff-request-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: var(--md-secondary);
+      }
+      .staff-request-card.selected {
+        border-color: var(--md-secondary);
+        box-shadow: 0 0 0 2px rgba(0, 106, 97, 0.15);
+      }
+      .staff-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .staff-status-pill.open {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+      .staff-status-pill.received {
+        background: #fffbeb;
+        color: #d97706;
+      }
+      .staff-status-pill.in_progress {
+        background: #eff6ff;
+        color: #2563eb;
+      }
+      .staff-status-pill.completed {
+        background: #f0fdf4;
+        color: #16a34a;
+      }
+      .staff-priority-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .staff-priority-dot.critical {
+        background: #ef4444;
+      }
+      .staff-priority-dot.high {
+        background: #f59e0b;
+      }
+      .staff-priority-dot.medium {
+        background: #3b82f6;
+      }
+      .staff-priority-dot.low {
+        background: #6b7280;
+      }
+      .staff-quick-btn {
+        cursor: pointer;
+      }
+      .staff-quick-btn:hover {
+        transform: translateY(-1px);
+      }
+      .staff-quick-btn:active {
+        transform: scale(0.97);
+      }
+      .staff-card-actions {
+        display: flex;
+        gap: 4px;
+        margin-top: 8px;
+      }
+      .staff-card-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 600;
+        border: 1px solid;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .staff-card-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+      @keyframes staffFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .staff-request-card {
+        animation: staffFadeIn 0.25s ease both;
+      }
+      .staff-request-card:nth-child(2) {
+        animation-delay: 0.05s;
+      }
+      .staff-request-card:nth-child(3) {
+        animation-delay: 0.1s;
+      }
+      .staff-request-card:nth-child(4) {
+        animation-delay: 0.15s;
+      }
+      .staff-request-card:nth-child(5) {
+        animation-delay: 0.2s;
+      }
+
+      .size-btn {
+        transition: all 0.15s ease;
+      }
+      .size-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      .size-btn.active {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      /* ── Dashboard ── */
+      .action-hero-card {
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: var(--md-radius-xl) !important;
+      }
+      .action-hero-card:hover {
+        transform: translateY(-4px);
+      }
+      .neighborhood-card {
+        transition: all 0.2s ease;
+        border-radius: var(--md-radius-lg) !important;
+      }
+      .neighborhood-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px var(--md-shadow);
+      }
+      .ai-chip {
+        transition: all 0.2s ease;
+      }
+      .ai-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 106, 97, 0.15);
+      }
+      .pulse-stat {
+        animation: fadeUp 0.6s ease both;
+      }
+      .pulse-stat:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      .pulse-stat:nth-child(3) {
+        animation-delay: 0.2s;
+      }
+      .pulse-stat:nth-child(4) {
+        animation-delay: 0.3s;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .dash-reveal {
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeUp 0.5s ease forwards;
+      }
+      .dash-reveal:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .dash-reveal:nth-child(2) {
+        animation-delay: 0.08s;
+      }
+      .dash-reveal:nth-child(3) {
+        animation-delay: 0.16s;
+      }
+      .dash-reveal:nth-child(4) {
+        animation-delay: 0.24s;
+      }
+      .dash-reveal:nth-child(5) {
+        animation-delay: 0.32s;
+      }
+      .dash-reveal:nth-child(6) {
+        animation-delay: 0.4s;
+      }
+      .dash-reveal:nth-child(7) {
+        animation-delay: 0.48s;
+      }
+      .hero-blob {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        pointer-events: none;
+      }
+
+      /* Safe area for mobile bottom nav */
+      .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      /* ══════════════════════════════════════════════════
+       MOBILE RESPONSIVENESS OVERHAUL (<768px)
+       ══════════════════════════════════════════════════ */
+      @media (max-width: 767px) {
+        /* Remove duplicate chat button from mobile header (FAB is enough) */
+        #mobile-chat-btn {
+          display: none;
+        }
+
+        /* Compact hero banner */
+        .dash-reveal .hero-blob {
+          display: none;
+        }
+
+        /* Compact action cards — thumb-friendly tap targets, less whitespace */
+        .action-hero-card {
+          padding: 0.875rem !important;
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: 0.75rem !important;
+        }
+        .action-hero-card .w-14 {
+          width: 2.75rem !important;
+          height: 2.75rem !important;
+          border-radius: 0.75rem !important;
+          margin-bottom: 0 !important;
+          flex-shrink: 0;
+        }
+        .action-hero-card .w-14 .material-symbols-outlined {
+          font-size: 22px !important;
+        }
+        .action-hero-card h3 {
+          font-size: 0.875rem !important;
+          margin-bottom: 0 !important;
+        }
+        .action-hero-card p {
+          font-size: 0.6875rem !important;
+          line-height: 1.4 !important;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        /* Compact community pulse stats */
+        .pulse-stat .text-3xl {
+          font-size: 1.5rem !important;
+        }
+        .pulse-stat .text-xs {
+          font-size: 0.625rem !important;
+        }
+
+        /* Compact neighborhood grade cards */
+        .neighborhood-card {
+          padding: 0.625rem !important;
+        }
+
+        /* Compact AI insight chips — horizontal layout */
+        .ai-chip {
+          padding: 0.625rem !important;
+          gap: 0.5rem !important;
+        }
+        .ai-chip .w-10 {
+          width: 2rem !important;
+          height: 2rem !important;
+          border-radius: 0.5rem !important;
+        }
+        .ai-chip .w-10 .material-symbols-outlined {
+          font-size: 16px !important;
+        }
+        .ai-chip .text-sm {
+          font-size: 0.8125rem !important;
+        }
+        .ai-chip .text-xs {
+          font-size: 0.6875rem !important;
+        }
+
+        /* Chat compact panel: nearly full width on mobile */
+        #chat-widget.chat-compact .chat-panel {
+          width: calc(100vw - 1.5rem) !important;
+          max-width: 420px;
+        }
+        #chat-widget.chat-compact {
+          right: 0.75rem !important;
+          left: 0.75rem !important;
+          bottom: 5rem !important;
+        }
+
+        /* Make chat fullscreen the default mobile expanded view */
+        #chat-widget.chat-expanded .chat-panel,
+        #chat-widget.chat-expanded {
+          inset: 0 !important;
+          width: 100vw !important;
+        }
+        #chat-widget.chat-expanded .chat-panel {
+          height: 100vh !important;
+          border-radius: 0 !important;
+        }
+
+        /* Stack pipeline trace underneath messages on mobile */
+        #chat-widget .chat-panel > .flex.flex-1 {
+          flex-direction: column !important;
+        }
+        #trace-panel {
+          width: 100% !important;
+          max-height: 40vh !important;
+          border-left: none !important;
+          border-top: 1px solid var(--md-outline-variant) !important;
+          flex-shrink: 0 !important;
+        }
+
+        /* Tighter dashboard padding */
+        #dashboard-home {
+          padding: 0.75rem !important;
+        }
+        #dashboard-home .space-y-6 > * + * {
+          margin-top: 1rem !important;
+        }
+
+        /* Staff-ops: hide subtitle & timestamp on small screens */
+        .cc-subtitle {
+          display: none !important;
+        }
+      }
+
+      /* ── Material Ripple Effect ── */
+      .ripple-container {
+        position: relative;
+        overflow: hidden;
+      }
+      .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(0, 106, 97, 0.15);
+        transform: scale(0);
+        animation: ripple-expand 0.6s ease-out forwards;
+        pointer-events: none;
+      }
+      [data-theme="dark"] .ripple {
+        background: rgba(77, 182, 172, 0.2);
+      }
+      @keyframes ripple-expand {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+
+      /* ── Toast Notifications ── */
+      .toast-container {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+        align-items: center;
+        pointer-events: none;
+      }
+      .toast {
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1.25rem;
+        border-radius: var(--md-radius-lg);
+        background: var(--md-inverse-surface);
+        color: var(--md-surface);
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        min-width: 280px;
+        max-width: 480px;
+        animation: toastIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+      }
+      .toast.toast-exit {
+        animation: toastOut 0.25s ease-in forwards;
+      }
+      .toast-success {
+        border-left: 4px solid #22c55e;
+      }
+      .toast-error {
+        border-left: 4px solid #ef4444;
+      }
+      .toast-info {
+        border-left: 4px solid var(--md-tertiary);
+      }
+      .toast-warning {
+        border-left: 4px solid #f59e0b;
+      }
+      .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 0 0 0 var(--md-radius-lg);
+        animation: toastProgress linear forwards;
+      }
+      @keyframes toastIn {
+        from {
+          opacity: 0;
+          transform: translateY(16px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      @keyframes toastOut {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+      }
+      @keyframes toastProgress {
+        from {
+          width: 100%;
+        }
+        to {
+          width: 0%;
+        }
+      }
+
+      /* ── Command Palette ── */
+      .cmd-palette-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 9998;
+        display: flex;
+        justify-content: center;
+        padding-top: 15vh;
+        animation: fadeIn 0.15s ease forwards;
+      }
+      .cmd-palette {
+        width: 560px;
+        max-width: 90vw;
+        max-height: 420px;
+        background: var(--md-surface);
+        border: 1px solid var(--md-outline-variant);
+        border-radius: var(--md-radius-xl);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: cmdSlideDown 0.2s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+      }
+      .cmd-palette-input {
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        color: var(--md-on-surface);
+        font-family: "Inter", sans-serif;
+        width: 100%;
+        border-bottom: 1px solid var(--md-outline-variant);
+      }
+      .cmd-palette-input::placeholder {
+        color: var(--md-outline);
+      }
+      .cmd-palette-results {
+        overflow-y: auto;
+        padding: 0.5rem;
+        flex: 1;
+      }
+      .cmd-result {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.625rem 0.75rem;
+        border-radius: var(--md-radius-sm);
+        cursor: pointer;
+        transition: background 0.1s;
+        font-size: 0.875rem;
+        color: var(--md-on-surface);
+      }
+      .cmd-result:hover,
+      .cmd-result.active {
+        background: var(--md-surface-container);
+      }
+      .cmd-result .material-symbols-outlined {
+        font-size: 20px;
+        color: var(--md-outline);
+      }
+      .cmd-result-shortcut {
+        margin-left: auto;
+        font-size: 0.7rem;
+        font-family: monospace;
+        padding: 0.125rem 0.375rem;
+        border-radius: 4px;
+        background: var(--md-surface-container);
+        color: var(--md-outline);
+        border: 1px solid var(--md-outline-variant);
+      }
+      @keyframes cmdSlideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* ── Keyboard Shortcut Overlay ── */
+      .shortcut-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(6px);
+        z-index: 9997;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease forwards;
+      }
+      .shortcut-card {
+        background: var(--md-surface);
+        border-radius: var(--md-radius-xl);
+        padding: 2rem;
+        max-width: 520px;
+        width: 90vw;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+      }
+      .shortcut-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--md-surface-container);
+      }
+      .shortcut-row:last-child {
+        border-bottom: none;
+      }
+      .kbd {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 26px;
+        padding: 0 0.5rem;
+        background: var(--md-surface-container);
+        border: 1px solid var(--md-outline-variant);
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-family: "Inter", monospace;
+        font-weight: 600;
+        color: var(--md-on-surface-variant);
+        box-shadow: 0 1px 2px var(--md-shadow);
+      }
+
+      /* ── Animated Counter ── */
+      @keyframes countUp {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .count-animate {
+        animation: countUp 0.4s ease forwards;
+      }
+
+      /* ── Scroll Reveal ── */
+      .scroll-reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+          opacity 0.5s ease,
+          transform 0.5s ease;
+      }
+      .scroll-reveal.revealed {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* ── Glassmorphic status bar ── */
+      .status-glow {
+        position: relative;
+      }
+      .status-glow::before {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--md-secondary),
+          var(--md-tertiary),
+          var(--md-secondary)
+        );
+        background-size: 200% 100%;
+        animation: shimmer 2s ease-in-out infinite;
+        border-radius: var(--md-radius-xl) var(--md-radius-xl) 0 0;
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: -100% 0;
+        }
+      }
+
+      /* ── Visual Response Cards ── */
+      .vr-stats {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .vr-stat {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        min-width: 110px;
+        flex: 1;
+        background: var(--md-surface-container);
+        border: 1px solid var(--md-outline-variant);
+      }
+      .vr-stat-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: white;
+        flex-shrink: 0;
+      }
+      .vr-stat-val {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--md-on-surface);
+        line-height: 1.1;
+      }
+      .vr-stat-label {
+        font-size: 11px;
+        color: var(--md-outline);
+        letter-spacing: 0.02em;
+      }
+      .vr-chart-wrap {
+        background: var(--md-surface-container);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid var(--md-outline-variant);
+        margin-bottom: 14px;
+      }
+      .vr-chart-wrap canvas {
+        max-height: 200px;
+      }
+      .vr-chart-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--md-on-surface);
+        margin-bottom: 10px;
+      }
+      .vr-tip {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--md-tertiary) 10%, transparent);
+        border: 1px solid
+          color-mix(in srgb, var(--md-tertiary) 25%, transparent);
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--md-on-surface);
+        line-height: 1.5;
+      }
+      .vr-tip-icon {
+        color: var(--md-tertiary);
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .vr-findings {
+        margin-bottom: 14px;
+      }
+      .vr-findings li {
+        padding: 2px 0;
+      }
+      .vr-meta {
+        font-size: 11px;
+        color: var(--md-outline);
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px solid var(--md-outline-variant);
+      }
+      body.dark-mode .vr-stat {
+        background: var(--md-surface-container);
+      }
+      body.dark-mode .vr-chart-wrap {
+        background: var(--md-surface-container);
+      }
+
+      /* ── Print Styles ── */
+      @media print {
+        /* Reset body constraints */
+        body {
+          overflow: visible !important;
+          height: auto !important;
+          display: block !important;
+        }
+        html {
+          overflow: visible !important;
+          height: auto !important;
+        }
+
+        /* Hide non-essential UI */
+        .side-nav,
+        #mobile-bottom-nav,
+        #chat-widget,
+        #chat-fab,
+        #command-palette-overlay,
+        .toast-container,
+        #insights-close,
+        #insights-refresh,
+        #insights-custom-btn,
+        #insights-print,
+        #insights-custom-bar,
+        #insights-loading,
+        .fab-pulse,
+        button,
+        .suggestion-chip {
+          display: none !important;
+        }
+
+        /* Keep print buttons visible - nope, hide all buttons for clean print */
+
+        /* Hide tab bar for print */
+        #insights-tab-bar {
+          display: none !important;
+        }
+
+        /* Show both tabs in print */
+        #insights-tab-dashboard,
+        #insights-tab-report {
+          display: block !important;
+        }
+
+        /* Convert insights overlay from fixed to static flow */
+        #insights-overlay,
+        #insights-overlay > div {
+          position: static !important;
+          overflow: visible !important;
+          height: auto !important;
+          max-height: none !important;
+          width: 100% !important;
+          inset: auto !important;
+          z-index: auto !important;
+        }
+
+        /* Make scrollable body print fully */
+        #insights-body {
+          overflow: visible !important;
+          height: auto !important;
+          max-height: none !important;
+          flex: none !important;
+          min-height: 0 !important;
+          padding: 0.5cm !important;
+        }
+
+        /* Ensure content flows naturally */
+        .flex-1,
+        .flex-col {
+          flex: none !important;
+        }
+        .max-w-5xl,
+        .max-w-3xl {
+          max-width: 100% !important;
+        }
+
+        /* header bar for print */
+        #insights-overlay header {
+          position: static !important;
+          border-bottom: 2px solid #006a61 !important;
+          background: white !important;
+          padding: 0.3cm 0.5cm !important;
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+
+        /* Cards: avoid breaking inside, keep borders */
+        .bg-white,
+        [style*="border-radius"] {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        /* Charts: ensure they print */
+        canvas {
+          max-width: 100% !important;
+          height: auto !important;
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        /* Force color printing for colored elements */
+        * {
+          print-color-adjust: exact !important;
+          -webkit-print-color-adjust: exact !important;
+        }
+
+        /* Hide shadows for cleaner print */
+        .shadow-sm,
+        .shadow-md,
+        .shadow-lg,
+        .shadow-xl,
+        .shadow-2xl {
+          box-shadow: none !important;
+        }
+
+        /* Gradient hero section */
+        [style*="linear-gradient"] {
+          print-color-adjust: exact !important;
+          -webkit-print-color-adjust: exact !important;
+          break-inside: avoid;
+        }
+
+        /* Page margins */
+        @page {
+          margin: 1cm;
+          size: A4;
+        }
+
+        /* Show a timestamp */
+        #insights-overlay header::after {
+          content: "Printed from CivicLens — " attr(data-date);
+          display: block;
+          font-size: 9px;
+          color: #73777f;
+          margin-top: 4px;
+        }
+
+        /* Chat trace & side panel: hide */
+        #trace-panel {
+          display: none !important;
+        }
+
+        /* Main app content hidden when insights is open */
+        .main-with-sidenav {
+          display: none !important;
+        }
+
+        /* ── Report Generator Print Styles ── */
+        #report-overlay,
+        #report-overlay > div {
+          position: static !important;
+          overflow: visible !important;
+          height: auto !important;
+          max-height: none !important;
+          width: 100% !important;
+          inset: auto !important;
+          z-index: auto !important;
+          display: block !important;
+        }
+
+        #report-overlay #rpt-sidebar,
+        #report-overlay #rpt-sidebar-backdrop,
+        #report-overlay #rpt-status-bar,
+        #report-overlay .rpt-bottom-bar,
+        #report-overlay #rpt-shortcuts,
+        #report-overlay header button,
+        #report-overlay header select,
+        #report-overlay header .rpt-template-btn {
+          display: none !important;
+        }
+
+        #report-overlay header {
+          position: static !important;
+          border-bottom: 2px solid #4f46e5 !important;
+          background: white !important;
+          padding: 0.3cm 0.5cm !important;
+        }
+
+        #report-overlay #rpt-content {
+          overflow: visible !important;
+          height: auto !important;
+          max-height: none !important;
+          flex: none !important;
+          padding: 0.5cm !important;
+          padding-bottom: 0 !important;
+        }
+
+        #report-overlay #rpt-sections {
+          max-width: 100% !important;
+        }
+
+        /* Allow each report section to break across pages */
+        #report-overlay #rpt-sections > div {
+          break-inside: avoid;
+          page-break-inside: avoid;
+          margin-bottom: 0.3cm;
+        }
+
+        /* Cover page takes its own page */
+        #report-overlay #rpt-sections > div:first-child {
+          page-break-after: always;
+          break-after: page;
+        }
+
+        /* The body wrapper flex must not constrain */
+        #report-overlay .flex-1,
+        #report-overlay .flex-col,
+        #report-overlay .flex {
+          flex: none !important;
+          display: block !important;
+          overflow: visible !important;
+          height: auto !important;
+        }
+        /* Re-enable flex on the header only so title stays inline */
+        #report-overlay header {
+          display: flex !important;
+        }
+      }
+
+      /* ── Accessibility: Focus-visible ring for keyboard navigation ── */
+      :focus-visible {
+        outline: 2px solid var(--md-secondary);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      .side-nav-item:focus-visible {
+        outline-offset: -2px;
+        box-shadow: 0 0 0 2px var(--md-secondary);
+      }
+      /* Ensure reduced-motion preference is respected */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      /* ── View transitions for tab switching ── */
+      .view-panel {
+        opacity: 0;
+        transform: translateY(6px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        pointer-events: none;
+      }
+      .view-panel.active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      /* ── Smooth loading shimmer for skeleton cards ── */
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      .skeleton-shimmer {
+        background: linear-gradient(90deg, var(--md-surface-container) 25%, var(--md-surface-container-high) 50%, var(--md-surface-container) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+      }
+    </style>
+  </head>
+  <body
+    class="h-full flex flex-col"
+    style="background: var(--md-surface); color: var(--md-on-surface)"
+  >
+    <!-- Skip to main content link for keyboard/screen reader users -->
+    <a href="#dashboard-home" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold" style="background: var(--md-secondary); color: var(--md-on-secondary);">
+      Skip to main content
+    </a>
+    <!-- ══════════════════════════════════════ -->
+    <!-- Desktop Side Navigation               -->
+    <!-- ══════════════════════════════════════ -->
+    <nav class="side-nav" id="side-nav" aria-label="Main navigation">
+      <div class="side-nav-brand">
+        <div class="logo">CL</div>
+        <div class="brand-text">
+          <h1>CivicLens</h1>
+          <p>Lake Forest, IL</p>
+        </div>
+        <button class="side-nav-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Collapse sidebar (Ctrl+B)" data-tooltip="Expand">
+          <span class="material-symbols-outlined">left_panel_close</span>
+        </button>
+      </div>
+
+      <button
+        class="side-nav-item active ripple-container"
+        data-nav="home"
+        data-tooltip="Home"
+        onclick="sideNavTo(this, 'home')"
+      >
+        <span class="material-symbols-outlined filled">home</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button
+        class="side-nav-item ripple-container"
+        data-nav="report"
+        data-tooltip="Report Issue"
+        onclick="
+          sideNavTo(this, 'report');
+          window.openServicePortal?.();
+        "
+      >
+        <span class="material-symbols-outlined">add_circle</span>
+        <span class="nav-label">Report Issue</span>
+      </button>
+      <button
+        class="side-nav-item ripple-container"
+        data-nav="map"
+        data-tooltip="Map"
+        onclick="
+          sideNavTo(this, 'map');
+          window.openCivicMap?.();
+        "
+      >
+        <span class="material-symbols-outlined">map</span>
+        <span class="nav-label">Map</span>
+      </button>
+      <button
+        class="side-nav-item ripple-container"
+        data-nav="insights"
+        data-tooltip="Insights"
+        onclick="
+          sideNavTo(this, 'insights');
+          window.openInsights?.();
+        "
+      >
+        <span class="material-symbols-outlined">insights</span>
+        <span class="nav-label">Insights</span>
+      </button>
+      <button
+        class="side-nav-item ripple-container"
+        data-nav="staff-ops"
+        data-tooltip="Staff Ops"
+        onclick="
+          sideNavTo(this, 'staff-ops');
+          window._staffOps?.openPage();
+        "
+      >
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        <span class="nav-label">Staff Ops</span>
+      </button>
+      <button
+        id="ai-dashboard-nav"
+        class="side-nav-item ripple-container"
+        data-nav="ai-dashboard"
+        data-tooltip="AI Dashboard"
+        style="display:none"
+        onclick="window.openDashboard?.();"
+      >
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="nav-label">AI Dashboard</span>
+      </button>
+
+      <div class="side-nav-spacer"></div>
+
+      <div class="side-nav-section-label">Tools &amp; Help</div>
+
+      <button
+        class="side-nav-item ripple-container"
+        id="demo-nav-btn"
+        data-tooltip="Demo Tour"
+        onclick="window.toggleDemo?.()"
+      >
+        <span class="material-symbols-outlined">play_circle</span>
+        <span class="nav-label">Demo Tour</span>
+      </button>
+
+      <button
+        class="side-nav-item ripple-container"
+        data-tooltip="Theme"
+        onclick="toggleDarkMode()"
+      >
+        <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+        <span class="nav-label" id="theme-label">Dark Mode</span>
+      </button>
+      <button
+        class="side-nav-item ripple-container"
+        data-tooltip="Shortcuts"
+        onclick="showKeyboardShortcuts()"
+      >
+        <span class="material-symbols-outlined">keyboard</span>
+        <span class="nav-label">Shortcuts</span>
+      </button>
+      <button
+        class="side-nav-item ripple-container"
+        data-tooltip="How It Works"
+        onclick="window.showHowItWorks?.()"
+      >
+        <span class="material-symbols-outlined">help</span>
+        <span class="nav-label">How It Works</span>
+      </button>
+    </nav>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container" role="alert" aria-live="assertive"></div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Mobile Top Header (glassmorphic)      -->
+    <!-- ══════════════════════════════════════ -->
+    <header class="mobile-header" role="banner">
+      <div
+        style="
+          width: 36px;
+          height: 36px;
+          border-radius: var(--md-radius-md);
+          background: linear-gradient(135deg, var(--md-secondary), #004d47);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          font-family: &quot;Plus Jakarta Sans&quot;, sans-serif;
+          font-weight: 800;
+          font-size: 0.85rem;
+          box-shadow: 0 2px 8px rgba(0, 106, 97, 0.25);
+        "
+      >
+        CL
+      </div>
+      <div class="flex-1 min-w-0">
+        <h1
+          class="font-display text-lg font-bold tracking-tight"
+          style="color: var(--md-on-surface)"
+        >
+          CivicLens
+        </h1>
+      </div>
+      <button
+        onclick="window.showHowItWorks?.()"
+        class="p-2 rounded-full hover:bg-black/5 transition"
+        title="How It Works"
+        aria-label="How It Works"
+      >
+        <span
+          class="material-symbols-outlined"
+          style="color: var(--md-on-surface-variant)"
+          >help</span
+        >
+      </button>
+      <button
+        onclick="toggleChatWidget()"
+        class="p-2 rounded-full hover:bg-black/5 transition"
+        title="Open AI Chat"
+        id="mobile-chat-btn"
+        aria-label="Open AI Chat"
+      >
+        <span
+          class="material-symbols-outlined"
+          style="color: var(--md-secondary)"
+          >chat_bubble</span
+        >
+      </button>
+    </header>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Main Content                          -->
+    <!-- ══════════════════════════════════════ -->
+    <main class="flex-1 overflow-y-auto pb-16 md:pb-0 main-with-sidenav" role="main" aria-label="Dashboard content">
+      <div
+        id="dashboard-home"
+        class="max-w-6xl mx-auto p-4 md:p-6 lg:p-8 space-y-6"
+      >
+        <!-- Skeleton loading state -->
+        <div
+          id="dash-loading"
+          class="space-y-6"
+          role="status"
+          aria-label="Loading dashboard"
+        >
+          <div
+            class="rounded-3xl p-6 md:p-10 animate-pulse"
+            style="background: linear-gradient(135deg, #b2dfdb, #80cbc4)"
+          >
+            <div class="h-4 bg-white/30 rounded w-32 mb-3"></div>
+            <div class="h-8 bg-white/30 rounded w-64 mb-2"></div>
+            <div class="h-4 bg-white/20 rounded w-48 mb-6"></div>
+            <div class="h-14 bg-white/20 rounded-2xl max-w-lg"></div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div
+              class="bg-white rounded-2xl p-6 border animate-pulse"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <div
+                class="w-14 h-14 rounded-2xl mb-4"
+                style="background: var(--md-surface-container)"
+              ></div>
+              <div
+                class="h-5 rounded w-28 mb-2"
+                style="background: var(--md-surface-container)"
+              ></div>
+              <div
+                class="h-3 rounded w-full mb-1"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+              <div
+                class="h-3 rounded w-3/4"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+            </div>
+            <div
+              class="bg-white rounded-2xl p-6 border animate-pulse"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <div
+                class="w-14 h-14 rounded-2xl mb-4"
+                style="background: var(--md-surface-container)"
+              ></div>
+              <div
+                class="h-5 rounded w-32 mb-2"
+                style="background: var(--md-surface-container)"
+              ></div>
+              <div
+                class="h-3 rounded w-full mb-1"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+              <div
+                class="h-3 rounded w-2/3"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+            </div>
+            <div
+              class="bg-white rounded-2xl p-6 border animate-pulse"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <div
+                class="w-14 h-14 rounded-2xl mb-4"
+                style="background: var(--md-surface-container)"
+              ></div>
+              <div
+                class="h-5 rounded w-28 mb-2"
+                style="background: var(--md-surface-container)"
+              ></div>
+              <div
+                class="h-3 rounded w-full mb-1"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+              <div
+                class="h-3 rounded w-4/5"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+            </div>
+          </div>
+          <div
+            class="bg-white rounded-2xl p-6 border animate-pulse"
+            style="border-color: var(--md-outline-variant)"
+          >
+            <div
+              class="h-6 rounded w-40 mb-4"
+              style="background: var(--md-surface-container)"
+            ></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div
+                class="h-20 rounded-xl"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+              <div
+                class="h-20 rounded-xl"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+              <div
+                class="h-20 rounded-xl"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+              <div
+                class="h-20 rounded-xl"
+                style="background: var(--md-surface-container-low)"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div id="dash-content" class="hidden space-y-6"></div>
+      </div>
+    </main>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Staff Operations Full-Page View       -->
+    <!-- ══════════════════════════════════════ -->
+    <div id="staff-ops-page" style="display:none;position:fixed;inset:0;z-index:50;flex-direction:column;height:100vh;background:#f8fafc;overflow:hidden;"></div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Floating Chat Widget                  -->
+    <!-- ══════════════════════════════════════ -->
+    <div
+      id="chat-widget"
+      class="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[60] hidden chat-compact"
+    >
+      <div
+        class="chat-panel bg-white shadow-2xl flex flex-col overflow-hidden"
+        style="border: 1px solid var(--md-outline-variant)"
+      >
+        <!-- Chat header -->
+        <div
+          class="shrink-0 px-4 py-3 flex items-center gap-3"
+          style="
+            background: linear-gradient(135deg, var(--md-secondary), #004d47);
+          "
+        >
+          <div
+            class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+          >
+            <span
+              class="material-symbols-outlined text-white"
+              style="font-size: 18px"
+              >smart_toy</span
+            >
+          </div>
+          <div class="flex-1 min-w-0">
+            <h2 class="text-sm font-bold text-white font-display">
+              CivicLens AI
+            </h2>
+            <p
+              id="chat-context-text"
+              class="text-[10px] text-white/70 truncate"
+            >
+              Ask about infrastructure, services, or data
+            </p>
+          </div>
+          <div class="flex items-center gap-1">
+            <button
+              id="chat-trace-toggle"
+              class="size-btn p-1.5 rounded-lg text-white/70 hover:text-white"
+              title="Toggle pipeline trace"
+            >
+              <svg
+                class="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </button>
+            <button
+              id="chat-size-compact"
+              onclick="setChatSize('compact')"
+              class="size-btn active p-1.5 rounded-lg text-white/70 hover:text-white chat-expanded-only"
+              title="Compact"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+              </svg>
+            </button>
+            <button
+              id="chat-size-expanded"
+              onclick="setChatSize('expanded')"
+              class="size-btn p-1.5 rounded-lg text-white/70 hover:text-white"
+              title="Expanded"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="2" />
+                <line x1="9" y1="2" x2="9" y2="22" />
+              </svg>
+            </button>
+            <button
+              id="chat-size-fullscreen"
+              onclick="setChatSize('fullscreen')"
+              class="size-btn p-1.5 rounded-lg text-white/70 hover:text-white"
+              title="Fullscreen"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="15 3 21 3 21 9" />
+                <polyline points="9 21 3 21 3 15" />
+              </svg>
+            </button>
+            <button
+              onclick="toggleChatWidget()"
+              class="p-1.5 rounded-lg text-white/70 hover:text-white"
+              title="Close"
+            >
+              <svg
+                class="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <!-- Page context bar -->
+        <div
+          id="chat-context-bar"
+          class="context-badge px-4 py-2 border-b shrink-0"
+          style="border-color: var(--md-outline-variant)"
+        >
+          <div
+            class="flex items-center gap-2 flex-wrap"
+            id="context-suggestions"
+          ></div>
+        </div>
+
+        <!-- ═══ STAFF COMMAND CENTER (hidden by default, shown on Staff toggle) ═══ -->
+        <div
+          id="staff-command-center"
+          class="hidden flex-1 flex flex-col overflow-hidden"
+          style="background: #fafbfc"
+        >
+          <!-- KPI Strip -->
+          <div
+            class="staff-kpi-strip grid grid-cols-4 gap-0 border-b"
+            style="border-color: var(--md-outline-variant)"
+          >
+            <div
+              class="staff-kpi-card p-3 text-center border-r"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <div
+                id="staff-kpi-open"
+                class="text-2xl font-bold"
+                style="color: #ef4444"
+              >
+                –
+              </div>
+              <div
+                class="text-[10px] font-medium uppercase tracking-wide"
+                style="color: var(--md-on-surface-variant)"
+              >
+                Open
+              </div>
+            </div>
+            <div
+              class="staff-kpi-card p-3 text-center border-r"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <div
+                id="staff-kpi-progress"
+                class="text-2xl font-bold"
+                style="color: #3b82f6"
+              >
+                –
+              </div>
+              <div
+                class="text-[10px] font-medium uppercase tracking-wide"
+                style="color: var(--md-on-surface-variant)"
+              >
+                In Progress
+              </div>
+            </div>
+            <div
+              class="staff-kpi-card p-3 text-center border-r"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <div
+                id="staff-kpi-completed"
+                class="text-2xl font-bold"
+                style="color: #10b981"
+              >
+                –
+              </div>
+              <div
+                class="text-[10px] font-medium uppercase tracking-wide"
+                style="color: var(--md-on-surface-variant)"
+              >
+                Completed
+              </div>
+            </div>
+            <div class="staff-kpi-card p-3 text-center">
+              <div
+                id="staff-kpi-critical"
+                class="text-2xl font-bold"
+                style="color: #f59e0b"
+              >
+                –
+              </div>
+              <div
+                class="text-[10px] font-medium uppercase tracking-wide"
+                style="color: var(--md-on-surface-variant)"
+              >
+                Critical WOs
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Bar -->
+          <div
+            class="flex items-center gap-1 px-3 py-2 border-b"
+            style="border-color: var(--md-outline-variant); background: white"
+          >
+            <button
+              onclick="staffTabSwitch('requests')"
+              class="staff-tab active text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all"
+              data-tab="requests"
+            >
+              <span
+                class="material-symbols-outlined align-middle"
+                style="font-size: 14px"
+                >inbox</span
+              >
+              Requests
+            </button>
+            <button
+              onclick="staffTabSwitch('workorders')"
+              class="staff-tab text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all"
+              data-tab="workorders"
+            >
+              <span
+                class="material-symbols-outlined align-middle"
+                style="font-size: 14px"
+                >construction</span
+              >
+              Work Orders
+            </button>
+            <button
+              onclick="staffTabSwitch('chat')"
+              class="staff-tab text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all"
+              data-tab="chat"
+            >
+              <span
+                class="material-symbols-outlined align-middle"
+                style="font-size: 14px"
+                >smart_toy</span
+              >
+              AI Chat
+            </button>
+            <button
+              onclick="staffTabSwitch('nlp-dashboard')"
+              class="staff-tab text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all"
+              data-tab="nlp-dashboard"
+            >
+              <span
+                class="material-symbols-outlined align-middle"
+                style="font-size: 14px"
+                >dashboard</span
+              >
+              NLP Dashboard
+            </button>
+            <div class="flex-1"></div>
+            <button
+              onclick="loadStaffDashboard()"
+              class="p-1.5 rounded-lg hover:bg-gray-100 transition"
+              title="Refresh data"
+            >
+              <span
+                class="material-symbols-outlined"
+                style="font-size: 16px; color: var(--md-outline)"
+                >refresh</span
+              >
+            </button>
+          </div>
+
+          <!-- Requests Queue Tab -->
+          <div
+            id="staff-tab-requests"
+            class="staff-tab-content flex-1 overflow-y-auto p-3 space-y-2"
+          >
+            <div id="staff-requests-list" class="space-y-2">
+              <div
+                class="flex items-center justify-center py-8 text-xs"
+                style="color: var(--md-outline)"
+              >
+                <span
+                  class="material-symbols-outlined animate-spin mr-2"
+                  style="font-size: 16px"
+                  >progress_activity</span
+                >
+                Loading service requests...
+              </div>
+            </div>
+          </div>
+
+          <!-- Work Orders Tab -->
+          <div
+            id="staff-tab-workorders"
+            class="staff-tab-content flex-1 overflow-y-auto p-3 space-y-2 hidden"
+          >
+            <div id="staff-wo-list" class="space-y-2">
+              <div
+                class="flex items-center justify-center py-8 text-xs"
+                style="color: var(--md-outline)"
+              >
+                <span
+                  class="material-symbols-outlined animate-spin mr-2"
+                  style="font-size: 16px"
+                  >progress_activity</span
+                >
+                Loading work orders...
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Chat Tab (shows the regular chat) -->
+          <div
+            id="staff-tab-chat"
+            class="staff-tab-content flex-1 flex flex-col overflow-hidden hidden"
+          >
+            <!-- Populated dynamically by moving chat content here -->
+          </div>
+
+          <!-- NLP Dashboard Tab -->
+          <div
+            id="staff-tab-nlp-dashboard"
+            class="staff-tab-content flex-1 flex flex-col items-center justify-center overflow-hidden hidden"
+            style="background: var(--md-surface, #fafbfc)"
+          >
+            <div class="text-center p-6 max-w-sm">
+              <span class="material-symbols-outlined mb-3" style="font-size:48px; color: var(--md-secondary)">dashboard</span>
+              <h3 class="text-base font-bold mb-2" style="color: var(--md-on-surface)">NLP Dashboard Builder</h3>
+              <p class="text-xs mb-4" style="color: var(--md-on-surface-variant)">Ask natural language questions and get interactive charts, KPIs, and AI-generated insights from your infrastructure data.</p>
+              <button onclick="window.openDashboard?.(); staffTabSwitch('requests');" class="px-5 py-2.5 text-sm font-semibold rounded-xl text-white transition-all hover:shadow-lg" style="background: linear-gradient(135deg, var(--md-secondary), #004d47)">
+                <span class="material-symbols-outlined align-middle mr-1" style="font-size:16px">open_in_new</span>
+                Open NLP Dashboard
+              </button>
+            </div>
+          </div>
+
+          <!-- Staff Quick Actions Bar (bottom) -->
+          <div
+            class="staff-actions-bar p-2 border-t flex items-center gap-2 flex-wrap"
+            style="border-color: var(--md-outline-variant); background: white"
+          >
+            <button
+              onclick="staffQuickAction('dispatch')"
+              class="staff-quick-btn flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold rounded-xl border transition-all hover:shadow-md"
+              style="background: #eff6ff; border-color: #93c5fd; color: #1d4ed8"
+            >
+              <span class="material-symbols-outlined" style="font-size: 14px"
+                >local_shipping</span
+              >
+              Dispatch Crew
+            </button>
+            <button
+              onclick="staffQuickAction('inspect')"
+              class="staff-quick-btn flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold rounded-xl border transition-all hover:shadow-md"
+              style="background: #fefce8; border-color: #fcd34d; color: #92400e"
+            >
+              <span class="material-symbols-outlined" style="font-size: 14px"
+                >search</span
+              >
+              Schedule Inspection
+            </button>
+            <button
+              onclick="staffQuickAction('status')"
+              class="staff-quick-btn flex items-center gap-1.5 px-3 py-2 text-[11px] font-semibold rounded-xl border transition-all hover:shadow-md"
+              style="background: #f0fdf4; border-color: #86efac; color: #166534"
+            >
+              <span class="material-symbols-outlined" style="font-size: 14px"
+                >check_circle</span
+              >
+              Update Status
+            </button>
+          </div>
+        </div>
+
+        <!-- Staff Quick Action Modal -->
+        <div
+          id="staff-action-modal"
+          class="hidden absolute inset-0 z-50 flex items-center justify-center"
+          style="background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px)"
+        >
+          <div
+            class="bg-white rounded-2xl shadow-2xl w-[90%] max-w-sm overflow-hidden"
+            style="border: 1px solid var(--md-outline-variant)"
+          >
+            <div
+              id="staff-modal-header"
+              class="p-4 border-b flex items-center justify-between"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <h3
+                id="staff-modal-title"
+                class="font-bold text-sm"
+                style="color: var(--md-on-surface)"
+              >
+                Action
+              </h3>
+              <button
+                onclick="closeStaffModal()"
+                class="p-1 rounded-lg hover:bg-gray-100"
+              >
+                <span class="material-symbols-outlined" style="font-size: 18px"
+                  >close</span
+                >
+              </button>
+            </div>
+            <div id="staff-modal-body" class="p-4">
+              <!-- Dynamic content per action -->
+            </div>
+            <div
+              id="staff-modal-footer"
+              class="p-3 border-t flex justify-end gap-2"
+              style="
+                border-color: var(--md-outline-variant);
+                background: #f9fafb;
+              "
+            >
+              <button
+                onclick="closeStaffModal()"
+                class="px-4 py-2 text-xs font-medium rounded-lg border"
+                style="border-color: var(--md-outline-variant)"
+              >
+                Cancel
+              </button>
+              <button
+                id="staff-modal-confirm"
+                onclick="executeStaffAction()"
+                class="px-4 py-2 text-xs font-medium rounded-lg text-white"
+                style="background: var(--md-secondary)"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Staff PIN Auth Modal -->
+        <div
+          id="staff-pin-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Staff authentication"
+          class="hidden absolute inset-0 z-[60] flex items-center justify-center"
+          style="background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px)"
+        >
+          <div
+            class="bg-white rounded-2xl shadow-2xl w-[85%] max-w-xs overflow-hidden"
+            style="border: 1px solid var(--md-outline-variant)"
+          >
+            <div
+              class="p-4 text-center"
+              style="background: linear-gradient(135deg, #065f46, #047857)"
+            >
+              <span
+                class="material-symbols-outlined text-white mb-1"
+                style="font-size: 32px"
+                >shield_person</span
+              >
+              <h3 class="font-bold text-sm text-white">Staff Authentication</h3>
+              <p
+                class="text-[10px] mt-0.5"
+                style="color: rgba(255, 255, 255, 0.7)"
+              >
+                Enter your staff PIN to access the Command Center
+              </p>
+            </div>
+            <div class="p-5">
+              <input
+                id="staff-pin-input"
+                type="password"
+                maxlength="20"
+                placeholder="Enter PIN"
+                class="w-full px-4 py-3 rounded-xl border text-center text-lg font-mono tracking-widest"
+                style="border-color: var(--md-outline-variant)"
+                autocomplete="off"
+                onkeydown="if (event.key === 'Enter') submitStaffPin();"
+              />
+              <p
+                id="staff-pin-error"
+                class="hidden text-[11px] text-center mt-2"
+                style="color: #ef4444"
+              >
+                Incorrect PIN. Try again.
+              </p>
+            </div>
+            <div class="px-5 pb-4 flex gap-2">
+              <button
+                onclick="closeStaffPinModal()"
+                class="flex-1 px-4 py-2.5 text-xs font-medium rounded-xl border"
+                style="border-color: var(--md-outline-variant)"
+              >
+                Cancel
+              </button>
+              <button
+                id="staff-pin-submit"
+                onclick="submitStaffPin()"
+                class="flex-1 px-4 py-2.5 text-xs font-bold rounded-xl text-white"
+                style="background: var(--md-secondary)"
+              >
+                <span
+                  class="material-symbols-outlined align-middle mr-1"
+                  style="font-size: 14px"
+                  >lock_open</span
+                >
+                Unlock
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat body: messages + trace in flex row -->
+        <div id="chat-body-wrapper" class="flex flex-1 overflow-hidden">
+          <!-- Messages column -->
+          <div class="chat-messages-col flex-1 flex flex-col overflow-hidden">
+            <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4" role="log" aria-live="polite" aria-label="Chat messages">
+              <!-- Welcome -->
+              <div
+                class="rounded-2xl p-4 border msg-animate"
+                style="
+                  background: linear-gradient(135deg, #e6f5f3, #ccebe8);
+                  border-color: #b2dfdb;
+                "
+              >
+                <p
+                  class="text-sm font-semibold mb-2 font-display"
+                  style="color: var(--md-secondary)"
+                >
+                  Welcome to CivicLens AI
+                </p>
+                <p
+                  class="text-xs mb-3"
+                  style="color: var(--md-on-surface-variant)"
+                >
+                  I can help with infrastructure questions, service requests,
+                  safety reports, and data analysis. Try a suggestion below or
+                  ask anything.
+                </p>
+                <div class="space-y-1.5" id="welcome-suggestions">
+                  <button
+                    onclick="askSuggestion(this)"
+                    class="suggestion-chip w-full text-left text-xs bg-white border px-3 py-2 rounded-lg hover:bg-white/80 flex items-center gap-2"
+                    style="
+                      border-color: var(--md-outline-variant);
+                      color: var(--md-on-surface);
+                    "
+                  >
+                    <span
+                      class="material-symbols-outlined"
+                      style="font-size: 16px; color: var(--md-secondary)"
+                      >crisis_alert</span
+                    >
+                    Show me all critical infrastructure issues with priority
+                    scores
+                  </button>
+                  <button
+                    onclick="askSuggestion(this)"
+                    class="suggestion-chip w-full text-left text-xs bg-white border px-3 py-2 rounded-lg hover:bg-white/80 flex items-center gap-2"
+                    style="
+                      border-color: var(--md-outline-variant);
+                      color: var(--md-on-surface);
+                    "
+                  >
+                    <span
+                      class="material-symbols-outlined"
+                      style="font-size: 16px; color: #f59e0b"
+                      >school</span
+                    >
+                    Which potholes are near schools and need urgent repair?
+                  </button>
+                  <button
+                    onclick="askSuggestion(this)"
+                    class="suggestion-chip w-full text-left text-xs bg-white border px-3 py-2 rounded-lg hover:bg-white/80 flex items-center gap-2"
+                    style="
+                      border-color: var(--md-outline-variant);
+                      color: var(--md-on-surface);
+                    "
+                  >
+                    <span
+                      class="material-symbols-outlined"
+                      style="font-size: 16px; color: #22c55e"
+                      >monitoring</span
+                    >
+                    What happens if we cut the budget by 20%?
+                  </button>
+                  <button
+                    onclick="askSuggestion(this)"
+                    class="suggestion-chip w-full text-left text-xs bg-white border px-3 py-2 rounded-lg hover:bg-white/80 flex items-center gap-2"
+                    style="
+                      border-color: var(--md-outline-variant);
+                      color: var(--md-on-surface);
+                    "
+                  >
+                    <span
+                      class="material-symbols-outlined"
+                      style="font-size: 16px; color: var(--md-tertiary)"
+                      >compare_arrows</span
+                    >
+                    How does our response time compare to Chicago 311?
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Input -->
+            <div
+              class="p-3"
+              style="border-top: 1px solid var(--md-outline-variant)"
+            >
+              <form id="chat-form" class="flex gap-2" role="search" aria-label="Ask a question about municipal infrastructure">
+                <input
+                  id="chat-input"
+                  type="text"
+                  placeholder="Ask about infrastructure..."
+                  aria-label="Type your infrastructure question"
+                  class="flex-1 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                  style="
+                    border-radius: var(--md-radius-full);
+                    border: 1px solid var(--md-outline-variant);
+                    background: var(--md-surface-container-low);
+                    --tw-ring-color: rgba(0, 106, 97, 0.4);
+                  "
+                  autocomplete="off"
+                  maxlength="2000"
+                />
+                <button
+                  type="submit"
+                  id="send-btn"
+                  class="px-4 py-2.5 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  style="
+                    background: var(--md-secondary);
+                    color: var(--md-on-secondary);
+                    border-radius: var(--md-radius-full);
+                  "
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-size: 18px"
+                    >send</span
+                  >
+                  <span class="hidden sm:inline chat-expanded-only">Send</span>
+                </button>
+              </form>
+              <div class="flex items-center justify-between mt-1.5">
+                <p class="text-[10px]" style="color: var(--md-outline)">
+                  Powered by GPT-4o-mini + MCP + RAG
+                </p>
+                <button
+                  onclick="clearChatHistory()"
+                  class="text-[10px] hover:text-red-400 transition"
+                  style="color: var(--md-outline)"
+                  title="Clear chat"
+                >
+                  Clear
+                </button>
+              </div>
+              <!-- Mobile pipeline toggle — only visible in compact chat mode -->
+              <button
+                id="mobile-pipeline-btn"
+                onclick="toggleMobilePipeline()"
+                class="compact-only-btn w-full mt-2 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-xl border transition-all"
+                style="
+                  border-color: var(--md-outline-variant);
+                  color: var(--md-secondary);
+                  background: var(--md-surface-container-low);
+                  display: none;
+                "
+              >
+                <span class="material-symbols-outlined" style="font-size: 16px"
+                  >bolt</span
+                >
+                <span id="mobile-pipeline-label">View AI Pipeline</span>
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 14px"
+                  id="mobile-pipeline-chevron"
+                  >expand_more</span
+                >
+              </button>
+            </div>
+          </div>
+          <!-- Pipeline trace column (toggleable) -->
+          <div
+            id="trace-panel"
+            class="w-64 border-l overflow-y-auto hidden shrink-0"
+            style="
+              background: var(--md-surface-container-low);
+              border-color: var(--md-outline-variant);
+            "
+          >
+            <div
+              class="p-3 border-b"
+              style="
+                border-color: var(--md-outline-variant);
+                background: linear-gradient(
+                  135deg,
+                  var(--md-surface-container-low),
+                  #e6f5f3
+                );
+              "
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <h2
+                    class="font-bold text-xs flex items-center gap-1.5 font-display"
+                    style="color: var(--md-on-surface)"
+                  >
+                    <span
+                      class="material-symbols-outlined"
+                      style="font-size: 16px; color: var(--md-secondary)"
+                      >bolt</span
+                    >
+                    Pipeline
+                  </h2>
+                  <p
+                    id="pipeline-subtitle"
+                    class="text-[10px] mt-0.5"
+                    style="color: var(--md-outline)"
+                  >
+                    Waiting for query...
+                  </p>
+                </div>
+                <div id="pipeline-timer" class="text-right hidden">
+                  <div
+                    class="text-sm font-mono font-bold"
+                    id="timer-value"
+                    style="color: var(--md-secondary)"
+                  >
+                    0.0s
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Flow Diagram (mini) -->
+            <div class="px-3 pt-2 pb-1">
+              <div class="flex items-center justify-between" id="flow-dots">
+                <div
+                  class="flow-dot w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center"
+                  style="border-color: var(--md-outline-variant)"
+                  data-stage="intent"
+                  title="Intent"
+                >
+                  <svg
+                    class="w-2.5 h-2.5"
+                    style="color: var(--md-outline)"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                </div>
+                <div
+                  class="flex-1 h-0.5 mx-0.5 flow-connector"
+                  style="background: var(--md-outline-variant)"
+                  data-idx="0"
+                ></div>
+                <div
+                  class="flow-dot w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center"
+                  style="border-color: var(--md-outline-variant)"
+                  data-stage="data"
+                  title="Data"
+                >
+                  <svg
+                    class="w-2.5 h-2.5"
+                    style="color: var(--md-outline)"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                  </svg>
+                </div>
+                <div
+                  class="flex-1 h-0.5 mx-0.5 flow-connector"
+                  style="background: var(--md-outline-variant)"
+                  data-idx="1"
+                ></div>
+                <div
+                  class="flow-dot w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center"
+                  style="border-color: var(--md-outline-variant)"
+                  data-stage="synthesis"
+                  title="Synthesis"
+                >
+                  <svg
+                    class="w-2.5 h-2.5"
+                    style="color: var(--md-outline)"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M12 2a7 7 0 017 7c0 3-2 5-4 6.5V18H9v-2.5C7 14 5 12 5 9a7 7 0 017-7z"
+                    />
+                    <path d="M9 22h6" />
+                    <path d="M9 18h6" />
+                  </svg>
+                </div>
+                <div
+                  class="flex-1 h-0.5 mx-0.5 flow-connector"
+                  style="background: var(--md-outline-variant)"
+                  data-idx="2"
+                ></div>
+                <div
+                  class="flow-dot w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center"
+                  style="border-color: var(--md-outline-variant)"
+                  data-stage="feedback"
+                  title="Feedback"
+                >
+                  <svg
+                    class="w-2.5 h-2.5"
+                    style="color: var(--md-outline)"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path
+                      d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="flex-1 h-0.5 mx-0.5 flow-connector"
+                  style="background: var(--md-outline-variant)"
+                  data-idx="3"
+                ></div>
+                <div
+                  class="flow-dot w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center"
+                  style="border-color: var(--md-outline-variant)"
+                  data-stage="report"
+                  title="Report"
+                >
+                  <svg
+                    class="w-2.5 h-2.5"
+                    style="color: var(--md-outline)"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                    />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- Stage Cards -->
+            <div id="trace-content" class="p-3 space-y-1.5">
+              <p
+                class="text-[10px] text-center py-4"
+                style="color: var(--md-outline)"
+              >
+                Send a message to see the pipeline trace.
+              </p>
+            </div>
+            <!-- Performance Waterfall -->
+            <div
+              id="waterfall-section"
+              class="hidden border-t p-3"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <h3
+                class="text-[10px] font-bold mb-1.5 flex items-center gap-1 font-display"
+                style="color: var(--md-on-surface)"
+              >
+                <span class="material-symbols-outlined" style="font-size: 14px"
+                  >waterfall_chart</span
+                >
+                Waterfall
+              </h3>
+              <div id="waterfall-chart" class="space-y-1"></div>
+              <div
+                id="waterfall-total"
+                class="text-[10px] mt-1.5 text-right"
+                style="color: var(--md-outline)"
+              ></div>
+            </div>
+            <!-- RAG Sources -->
+            <div
+              id="rag-section"
+              class="hidden border-t p-3"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <h3
+                class="text-[10px] font-bold mb-1.5 flex items-center gap-1 font-display"
+                style="color: var(--md-secondary)"
+              >
+                <span class="material-symbols-outlined" style="font-size: 14px"
+                  >menu_book</span
+                >
+                RAG Sources
+              </h3>
+              <div id="rag-content" class="space-y-1"></div>
+            </div>
+            <!-- Coverage Gauge -->
+            <div
+              id="coverage-section"
+              class="hidden border-t p-3"
+              style="border-color: var(--md-outline-variant)"
+            >
+              <h3
+                class="text-[10px] font-bold mb-1.5 font-display"
+                style="color: var(--md-on-surface)"
+              >
+                Coverage
+              </h3>
+              <div id="coverage-gauge"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Chat FAB                              -->
+    <!-- ══════════════════════════════════════ -->
+    <button
+      id="chat-fab"
+      onclick="toggleChatWidget()"
+      class="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-14 h-14 rounded-full text-white shadow-xl hover:shadow-2xl transition-all flex items-center justify-center fab-pulse"
+      style="background: linear-gradient(135deg, var(--md-secondary), #004d47)"
+      title="Open AI Chat (Ctrl+Shift+K)"
+    >
+      <span
+        id="fab-icon-chat"
+        class="material-symbols-outlined"
+        style="font-size: 26px"
+        >chat_bubble</span
+      >
+      <span
+        id="fab-unread"
+        class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center"
+        >!</span
+      >
+    </button>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- Mobile Bottom Navigation              -->
+    <!-- ══════════════════════════════════════ -->
+    <nav
+      id="mobile-bottom-nav"
+      aria-label="Mobile navigation"
+      class="md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-md border-t z-40 safe-area-bottom"
+      style="
+        background: rgba(249, 249, 255, 0.92);
+        border-color: var(--md-outline-variant);
+      "
+    >
+      <div class="flex justify-around items-center h-16 px-2">
+        <button
+          class="bottom-nav-item active flex flex-col items-center gap-0.5 py-1 px-3 relative"
+          style="color: var(--md-secondary)"
+          data-nav="home"
+          onclick="setActiveNav(this)"
+        >
+          <div
+            class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+            style="background: var(--md-secondary)"
+          ></div>
+          <span class="material-symbols-outlined filled" style="font-size: 24px"
+            >home</span
+          >
+          <span class="text-[10px] font-medium">Home</span>
+        </button>
+        <button
+          class="bottom-nav-item flex flex-col items-center gap-0.5 py-1 px-3 relative"
+          style="color: var(--md-outline)"
+          data-nav="report"
+          onclick="
+            setActiveNav(this);
+            window.openServicePortal?.();
+          "
+        >
+          <div
+            class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+            style="background: var(--md-secondary)"
+          ></div>
+          <span class="material-symbols-outlined" style="font-size: 24px"
+            >add_circle</span
+          >
+          <span class="text-[10px] font-medium">Report</span>
+        </button>
+        <button
+          class="bottom-nav-item flex flex-col items-center gap-0.5 py-1 px-3 relative"
+          style="color: var(--md-outline)"
+          data-nav="map"
+          onclick="
+            setActiveNav(this);
+            window.openCivicMap?.();
+          "
+        >
+          <div
+            class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+            style="background: var(--md-secondary)"
+          ></div>
+          <span class="material-symbols-outlined" style="font-size: 24px"
+            >map</span
+          >
+          <span class="text-[10px] font-medium">Map</span>
+        </button>
+        <button
+          class="bottom-nav-item flex flex-col items-center gap-0.5 py-1 px-3 relative"
+          style="color: var(--md-outline)"
+          data-nav="insights"
+          onclick="
+            setActiveNav(this);
+            window.openInsights?.();
+          "
+        >
+          <div
+            class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+            style="background: var(--md-secondary)"
+          ></div>
+          <span class="material-symbols-outlined" style="font-size: 24px"
+            >insights</span
+          >
+          <span class="text-[10px] font-medium">Insights</span>
+        </button>
+      </div>
+    </nav>
+
+    <script src="/app.js"></script>
+    <script src="/staff-ops.js"></script>
+    <script type="module">
+      import "/nlp-dashboard.js";
+      import "/report-generator.js";
+      import "/insights.js";
+      import "/service-portal.js";
+      import "/civic-map.js";
+      import "/demo-mode.js";
+      import "/demo-overlay.js";
+      console.log(
+        "Modules loaded. openInsights:",
+        typeof window.openInsights,
+        "openServicePortal:",
+        typeof window.openServicePortal,
+        "openCivicMap:",
+        typeof window.openCivicMap,
+      );
+
+      // Hook page context tracking after modules load
+      setTimeout(() => {
+        if (typeof hookPageContextTracking === "function")
+          hookPageContextTracking();
+        // Initialize context bar
+        if (typeof updateContextBar === "function") updateContextBar();
+      }, 200);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "id": "fhwa_road_FHWA_Performance_Measures___Pavement_Con_c0",
+  "sourceId": "fhwa_road",
+  "category": "repair_standards",
+  "title": "FHWA Performance Measures — Pavement Condition (23 CFR 490)",
+  "content": "Federal Highway Administration 23 CFR Part 490 establishes national pavement condition measures. States must report International Roughness Index (IRI), cracking percentage, and rutting depth for NHS roads. Good pavement: IRI < 95 in/mi, cracking < 5%, rutting < 0.20 in. Poor pavement: IRI > 170 in/mi, cracking > 20%, rutting > 0.40 in. Under MAP-21/FAST Act, no more than 5% of Interstate lane-miles may be in poor condition. States failing to meet targets face penalty: must spend NHPP funds on Interstate pavements. Illinois DOT reports 83% of NHS pavements in good/fair condition (2024 data). Municipalities maintaining local roads are not subject to 23 CFR 490, but best practices recommend PCI surveys every 2 years and maintaining PCI > 55 for cost-effective preservation.",
+  "url": "https://www.ecfr.gov/current/title-23/chapter-I/subchapter-E/part-490",
+  "fetchedAt": "2026-03-28T15:17:27.539Z",
+  "chunkIndex": 0,
+  "totalChunks": 1
+}

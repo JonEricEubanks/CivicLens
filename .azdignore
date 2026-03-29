@@ -1,0 +1,65 @@
+# Node
+node_modules/
+
+# Old deploy artifacts
+_tmp_deploy/
+_tmp_deploy_full/
+deploy-pkg/
+deploy-staging/
+hotfix-pkg/
+hotfix-v4/
+
+# Logs
+azure-logs/
+app-logs/
+build-logs/
+civiclens-logs/
+*.log
+
+# Dev/test files
+tests/
+*.test.js
+*.test.mjs
+test-*.mjs
+diagnose-*.mjs
+check-server.mjs
+send-test-email.mjs
+_test_civicutils.cjs
+verify.cjs
+write-portal.cjs
+fix-*.cjs
+recalc-proximity.cjs
+
+# Build artifacts
+deploy.zip
+deploy-logs.zip
+build-log.zip
+deploy-output.txt
+build-err.txt
+build-result.txt
+
+# Docs (not needed at runtime)
+BLOG.md
+CHANGELOG.md
+PROMPTS.md
+REASONING.md
+README.md
+next-steps.md
+
+# IDE / OS
+.env
+.DS_Store
+*.bak
+.gitignore
+
+# RAG vectorstore (rebuilt at runtime)
+rag/vectorstore/
+
+# Infra (not needed in app package)
+infra/
+
+# Unused files
+public/service-portal-new.js
+public/index-backup.html
+public/index-old.html
+__deployed_*.txt

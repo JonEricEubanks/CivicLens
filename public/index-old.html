@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <title>CivicLens — Community Infrastructure Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="/icons.js"></script>
+  <style>
+    .prose h1 { font-size: 1.5rem; font-weight: 700; margin: 0.5rem 0; }
+    .prose h2 { font-size: 1.25rem; font-weight: 600; margin: 0.75rem 0 0.25rem; color: #334e68; }
+    .prose h3 { font-size: 1.1rem; font-weight: 600; margin: 0.5rem 0 0.25rem; color: #486581; }
+    .prose p  { margin: 0.5rem 0; line-height: 1.6; }
+    .prose ol, .prose ul { margin: 0.25rem 0; padding-left: 1.5rem; }
+    .prose li { margin: 0.15rem 0; }
+    .prose hr { margin: 1rem 0; border-color: #d9e2ec; }
+    .prose em { color: #627d98; font-size: 0.85rem; }
+    .prose strong { color: #243b53; }
+
+    @keyframes pulse-dot { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    .thinking-dot { animation: pulse-dot 1.4s infinite; }
+    .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes stage-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .stage-animate { animation: stage-enter 0.35s ease-out forwards; }
+
+    @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); } 70% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } }
+    .pulse-active { animation: pulse-ring 1.5s infinite; }
+
+    @keyframes flow-dash { to { stroke-dashoffset: -20; } }
+    .flow-line-animated { stroke-dasharray: 8 4; animation: flow-dash 0.8s linear infinite; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+
+    @keyframes bar-fill { from { width: 0; } }
+    .bar-animate { animation: bar-fill 0.6s ease-out forwards; }
+
+    .stage-card { transition: all 0.3s ease; }
+    .stage-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .stage-card.running { border-color: #6366f1; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); }
+    .stage-card.completed { border-color: #22c55e; }
+    .stage-card.waiting { opacity: 0.5; }
+    .stage-card.error { border-color: #ef4444; background: #fef2f2; }
+
+    .detail-expand { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .detail-expand.open { max-height: 500px; }
+
+    .waterfall-bar { transition: width 0.5s ease-out; border-radius: 0 4px 4px 0; }
+
+    /* Mobile bottom nav */
+    .bottom-nav-item { transition: all 0.2s ease; }
+    .bottom-nav-item.active { color: #6366f1; }
+    .bottom-nav-item.active .nav-indicator { transform: scaleX(1); }
+    .nav-indicator { transform: scaleX(0); transition: transform 0.2s ease; }
+
+    /* Pipeline drawer on mobile */
+    @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes slideOutRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
+    .drawer-enter { animation: slideInRight 0.3s ease-out forwards; }
+    .drawer-exit { animation: slideOutRight 0.25s ease-in forwards; }
+
+    /* Mobile menu */
+    @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .menu-animate { animation: fadeSlideDown 0.2s ease-out forwards; }
+
+    /* Suggestion chips */
+    .suggestion-chip { transition: all 0.2s ease; }
+    .suggestion-chip:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .suggestion-chip:active { transform: scale(0.97); }
+
+    /* Chat message animations */
+    @keyframes msgIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-animate { animation: msgIn 0.3s ease-out forwards; }
+
+    /* Floating chat widget */
+    @keyframes chatSlideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes chatSlideDown { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(20px) scale(0.95); } }
+    .chat-open { animation: chatSlideUp 0.25s ease-out forwards; }
+    .chat-close { animation: chatSlideDown 0.2s ease-in forwards; }
+    @keyframes fabPulse { 0%,100%{box-shadow:0 4px 20px rgba(99,102,241,0.4)} 50%{box-shadow:0 4px 30px rgba(99,102,241,0.7)} }
+    .fab-pulse { animation: fabPulse 2s ease-in-out infinite; }
+    /* Dashboard cards */
+    .dash-card { transition: all 0.2s ease; }
+    .dash-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+
+    /* Service request card in chat */
+    .sr-create-card { transition: all 0.2s ease; }
+    .sr-create-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+
+    /* ── Chat panel sizes ── */
+    #chat-widget .chat-panel { transition: width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, bottom 0.3s ease, right 0.3s ease, top 0.3s ease; }
+
+    /* Compact (default) */
+    #chat-widget.chat-compact .chat-panel {
+      width: 380px; height: min(78vh, 620px);
+      border-radius: 1.25rem;
+    }
+    @media (min-width: 640px) { #chat-widget.chat-compact .chat-panel { width: 420px; } }
+    @media (min-width: 768px) { #chat-widget.chat-compact .chat-panel { width: 460px; } }
+
+    /* Expanded (side panel) */
+    #chat-widget.chat-expanded { top: 0; bottom: 0; right: 0; left: auto; width: auto; }
+    #chat-widget.chat-expanded .chat-panel {
+      width: min(580px, 90vw); height: 100vh;
+      border-radius: 0;
+      box-shadow: -8px 0 30px rgba(0,0,0,0.15);
+    }
+    @media (min-width: 1024px) { #chat-widget.chat-expanded .chat-panel { width: 620px; } }
+
+    /* Fullscreen */
+    #chat-widget.chat-fullscreen { inset: 0; width: auto; }
+    #chat-widget.chat-fullscreen .chat-panel {
+      width: 100vw; height: 100vh;
+      border-radius: 0;
+      max-width: 100%;
+    }
+    #chat-widget.chat-fullscreen .chat-messages-col { max-width: 800px; margin: 0 auto; }
+
+    /* Expanded prose styles — bigger & more readable */
+    #chat-widget.chat-expanded .prose, #chat-widget.chat-fullscreen .prose {
+      font-size: 0.9rem; line-height: 1.75;
+    }
+    #chat-widget.chat-expanded .prose h2, #chat-widget.chat-fullscreen .prose h2 { font-size: 1.15rem; margin-top: 1rem; }
+    #chat-widget.chat-expanded .prose h3, #chat-widget.chat-fullscreen .prose h3 { font-size: 1.05rem; }
+    #chat-widget.chat-expanded .prose p, #chat-widget.chat-fullscreen .prose p { margin: 0.6rem 0; }
+    #chat-widget.chat-expanded .prose li, #chat-widget.chat-fullscreen .prose li { margin: 0.25rem 0; }
+
+    /* Collapsible response sections */
+    .response-section { border-left: 3px solid #e0e7ff; padding-left: 0.75rem; margin: 0.5rem 0; }
+    .response-section-toggle { cursor: pointer; -webkit-user-select: none; user-select: none; }
+    .response-section-toggle:hover { color: #4f46e5; }
+    .response-section-body { max-height: 2000px; overflow: hidden; transition: max-height 0.3s ease; }
+    .response-section-body.collapsed { max-height: 0; }
+
+    /* Page context badge */
+    .context-badge { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); }
+    .context-chip { transition: all 0.15s ease; }
+    .context-chip:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .context-chip:active { transform: scale(0.97); }
+
+    /* Size toggle buttons */
+    .size-btn { transition: all 0.15s ease; }
+    .size-btn:hover { background: rgba(255,255,255,0.3); }
+    .size-btn.active { background: rgba(255,255,255,0.25); }
+
+    /* ── Redesigned Dashboard ── */
+    .action-hero-card { transition: all 0.25s cubic-bezier(.4,0,.2,1); }
+    .action-hero-card:hover { transform: translateY(-4px); }
+    .neighborhood-card { transition: all 0.2s ease; }
+    .neighborhood-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .ai-chip { transition: all 0.2s ease; }
+    .ai-chip:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.15); }
+    .pulse-stat { animation: fadeUp 0.6s ease both; }
+    .pulse-stat:nth-child(2) { animation-delay: 0.1s; }
+    .pulse-stat:nth-child(3) { animation-delay: 0.2s; }
+    .pulse-stat:nth-child(4) { animation-delay: 0.3s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .dash-reveal { opacity: 0; transform: translateY(16px); animation: fadeUp 0.5s ease forwards; }
+    .dash-reveal:nth-child(1) { animation-delay: 0s; }
+    .dash-reveal:nth-child(2) { animation-delay: 0.08s; }
+    .dash-reveal:nth-child(3) { animation-delay: 0.16s; }
+    .dash-reveal:nth-child(4) { animation-delay: 0.24s; }
+    .dash-reveal:nth-child(5) { animation-delay: 0.32s; }
+    .dash-reveal:nth-child(6) { animation-delay: 0.4s; }
+    .dash-reveal:nth-child(7) { animation-delay: 0.48s; }
+    .hero-blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.06); pointer-events: none; }
+  </style>
+</head>
+<body class="h-full bg-civic-50 text-civic-900 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-civic-900 text-white px-4 md:px-6 py-3 flex items-center gap-3 shadow-lg relative z-40" role="banner">
+    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-civic-600 flex items-center justify-center font-bold text-base shadow-md">CL</div>
+    <div class="flex-1 min-w-0">
+      <h1 class="text-lg md:text-xl font-bold tracking-tight">CivicLens</h1>
+      <p class="text-civic-300 text-xs truncate hidden sm:block">Community Infrastructure Platform — Lake Forest, IL</p>
+    </div>
+    <!-- Desktop nav buttons -->
+    <nav class="hidden md:flex items-center gap-2" aria-label="Main navigation">
+      <button onclick="window.showHowItWorks?.()" class="flex items-center gap-1.5 bg-civic-700 hover:bg-civic-600 text-white text-sm font-medium px-3 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-white/50" aria-label="How It Works">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span class="hidden lg:inline">How It Works</span>
+      </button>
+      <button onclick="window.openServicePortal?.()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-3 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-white/50" aria-label="Service Portal">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span class="hidden lg:inline">Service Portal</span>
+      </button>
+      <button onclick="window.openCivicMap?.()" class="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium px-3 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-white/50" aria-label="Infrastructure Map">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        <span class="hidden lg:inline">Map</span>
+      </button>
+      <button onclick="window.openDashboard?.()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-3 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-white/50" aria-label="Analytics Dashboard">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="hidden lg:inline">Dashboard</span>
+      </button>
+      <button onclick="window.openReportGenerator?.()" class="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium px-3 py-2 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-white/50" aria-label="Generate Report">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="hidden lg:inline">Report</span>
+      </button>
+    </nav>
+    <!-- Mobile: info + pipeline toggle -->
+    <button onclick="window.showHowItWorks?.()" class="md:hidden p-2 rounded-lg hover:bg-civic-700 transition focus:outline-none focus:ring-2 focus:ring-white/50" title="How It Works" aria-label="How It Works">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
+    <button onclick="toggleChatWidget()" class="md:hidden p-2 rounded-lg hover:bg-civic-700 transition focus:outline-none focus:ring-2 focus:ring-white/50" title="Open AI Chat" id="mobile-chat-btn" aria-label="Open AI Chat">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    </button>
+  </header>
+
+  <!-- Main Content = Dashboard Home -->
+  <main class="flex-1 overflow-y-auto pb-16 md:pb-0">
+    <div id="dashboard-home" class="max-w-6xl mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+      <!-- Skeleton loading state -->
+      <div id="dash-loading" class="space-y-6" role="status" aria-label="Loading dashboard">
+        <!-- Hero skeleton -->
+        <div class="bg-gradient-to-br from-indigo-200 to-purple-200 rounded-3xl p-6 md:p-10 animate-pulse">
+          <div class="h-4 bg-white/30 rounded w-32 mb-3"></div>
+          <div class="h-8 bg-white/30 rounded w-64 mb-2"></div>
+          <div class="h-4 bg-white/20 rounded w-48 mb-6"></div>
+          <div class="h-14 bg-white/20 rounded-2xl max-w-lg"></div>
+        </div>
+        <!-- Action cards skeleton -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white rounded-2xl p-6 border border-civic-100 animate-pulse">
+            <div class="w-14 h-14 bg-gray-200 rounded-2xl mb-4"></div>
+            <div class="h-5 bg-gray-200 rounded w-28 mb-2"></div>
+            <div class="h-3 bg-gray-100 rounded w-full mb-1"></div>
+            <div class="h-3 bg-gray-100 rounded w-3/4"></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-civic-100 animate-pulse">
+            <div class="w-14 h-14 bg-gray-200 rounded-2xl mb-4"></div>
+            <div class="h-5 bg-gray-200 rounded w-32 mb-2"></div>
+            <div class="h-3 bg-gray-100 rounded w-full mb-1"></div>
+            <div class="h-3 bg-gray-100 rounded w-2/3"></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-civic-100 animate-pulse">
+            <div class="w-14 h-14 bg-gray-200 rounded-2xl mb-4"></div>
+            <div class="h-5 bg-gray-200 rounded w-28 mb-2"></div>
+            <div class="h-3 bg-gray-100 rounded w-full mb-1"></div>
+            <div class="h-3 bg-gray-100 rounded w-4/5"></div>
+          </div>
+        </div>
+        <!-- Pulse skeleton -->
+        <div class="bg-white rounded-2xl p-6 border border-civic-100 animate-pulse">
+          <div class="h-5 bg-gray-200 rounded w-36 mb-4"></div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="flex flex-col items-center"><div class="w-16 h-16 bg-gray-200 rounded-full mb-2"></div><div class="h-3 bg-gray-100 rounded w-14"></div></div>
+            <div class="flex flex-col items-center"><div class="h-8 bg-gray-200 rounded w-10 mb-2"></div><div class="h-3 bg-gray-100 rounded w-16"></div></div>
+            <div class="flex flex-col items-center"><div class="h-8 bg-gray-200 rounded w-10 mb-2"></div><div class="h-3 bg-gray-100 rounded w-20"></div></div>
+            <div class="flex flex-col items-center"><div class="h-8 bg-gray-200 rounded w-10 mb-2"></div><div class="h-3 bg-gray-100 rounded w-20"></div></div>
+          </div>
+        </div>
+      </div>
+      <!-- Dashboard content injected by JS -->
+      <div id="dash-content" class="hidden space-y-6"></div>
+    </div>
+  </main>
+
+  <!-- Floating Chat Widget -->
+  <div id="chat-widget" class="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 hidden chat-compact">
+    <div class="chat-panel bg-white shadow-2xl border border-civic-200 flex flex-col overflow-hidden">
+      <!-- Chat header -->
+      <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3 flex items-center gap-3 shrink-0">
+        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="text-sm font-bold">AI Assistant</h2>
+          <div id="chat-context-label" class="text-white/70 text-[10px] flex items-center gap-1">
+            <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <span id="chat-context-text">Ask anything about Lake Forest infrastructure</span>
+          </div>
+        </div>
+        <!-- Size toggle buttons -->
+        <div class="flex items-center gap-0.5">
+          <button id="chat-size-compact" onclick="setChatSize('compact')" class="size-btn active p-1.5 rounded-lg transition" title="Compact">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+          </button>
+          <button id="chat-size-expanded" onclick="setChatSize('expanded')" class="size-btn p-1.5 rounded-lg transition" title="Side panel">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+          </button>
+          <button id="chat-size-fullscreen" onclick="setChatSize('fullscreen')" class="size-btn p-1.5 rounded-lg transition" title="Fullscreen">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          </button>
+        </div>
+        <div class="w-px h-5 bg-white/20"></div>
+        <button id="chat-trace-toggle" class="p-1.5 rounded-lg hover:bg-white/20 transition" title="Toggle pipeline trace">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </button>
+        <button onclick="toggleChatWidget()" class="p-1.5 rounded-lg hover:bg-white/20 transition" title="Close chat">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <!-- Page context bar -->
+      <div id="chat-context-bar" class="context-badge px-4 py-2 border-b border-indigo-100 shrink-0">
+        <div class="flex items-center gap-2 flex-wrap" id="context-suggestions"></div>
+      </div>
+      <!-- Chat body: messages + trace in flex row -->
+      <div class="flex flex-1 overflow-hidden">
+        <!-- Messages column -->
+        <div class="chat-messages-col flex-1 flex flex-col overflow-hidden">
+          <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <!-- Welcome -->
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100 msg-animate">
+              <p class="text-sm font-semibold text-indigo-800 mb-2">Welcome to CivicLens AI</p>
+              <p class="text-xs text-indigo-600/70 mb-3">I can help with infrastructure questions, service requests, safety reports, and data analysis. Try a suggestion below or ask anything.</p>
+              <div class="space-y-1.5" id="welcome-suggestions">
+                <button onclick="askSuggestion(this)" class="suggestion-chip w-full text-left text-xs bg-white border border-indigo-100 text-indigo-700 px-3 py-2 rounded-lg hover:bg-indigo-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 flex-shrink-0 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                  What are the top open issues right now?
+                </button>
+                <button onclick="askSuggestion(this)" class="suggestion-chip w-full text-left text-xs bg-white border border-indigo-100 text-indigo-700 px-3 py-2 rounded-lg hover:bg-indigo-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 flex-shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  How do I report or track a service request?
+                </button>
+                <button onclick="askSuggestion(this)" class="suggestion-chip w-full text-left text-xs bg-white border border-indigo-100 text-indigo-700 px-3 py-2 rounded-lg hover:bg-indigo-50 flex items-center gap-2">
+                  <svg class="w-3.5 h-3.5 flex-shrink-0 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  Give me an overview of infrastructure health
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Input -->
+          <div class="border-t border-civic-200 p-3">
+            <form id="chat-form" class="flex gap-2">
+              <input id="chat-input" type="text" placeholder="Ask about infrastructure..." class="flex-1 rounded-xl border border-civic-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-civic-50/50" autocomplete="off" maxlength="2000" />
+              <button type="submit" id="send-btn" class="bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <span class="hidden sm:inline chat-expanded-only">Send</span>
+              </button>
+            </form>
+            <div class="flex items-center justify-between mt-1.5">
+              <p class="text-[10px] text-civic-300">Powered by GPT-4o-mini + MCP + RAG</p>
+              <button onclick="clearChatHistory()" class="text-[10px] text-civic-300 hover:text-red-400 transition" title="Clear chat">Clear</button>
+            </div>
+          </div>
+        </div>
+        <!-- Pipeline trace column (toggleable) -->
+        <div id="trace-panel" class="w-64 bg-civic-50 border-l border-civic-200 overflow-y-auto hidden shrink-0">
+          <!-- Pipeline Header -->
+          <div class="p-3 border-b border-civic-100 bg-gradient-to-r from-civic-50 to-indigo-50">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="font-bold text-civic-800 text-xs flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  Pipeline
+                </h2>
+                <p id="pipeline-subtitle" class="text-civic-400 text-[10px] mt-0.5">Waiting for query...</p>
+              </div>
+              <div id="pipeline-timer" class="text-right hidden">
+                <div class="text-sm font-mono font-bold text-indigo-600" id="timer-value">0.0s</div>
+              </div>
+            </div>
+          </div>
+          <!-- Flow Diagram (mini) -->
+          <div class="px-3 pt-2 pb-1">
+            <div class="flex items-center justify-between" id="flow-dots">
+              <div class="flow-dot w-5 h-5 rounded-full border-2 border-civic-200 bg-white flex items-center justify-center" data-stage="intent" title="Intent"><svg class="w-2.5 h-2.5 text-civic-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+              <div class="flex-1 h-0.5 bg-civic-200 mx-0.5 flow-connector" data-idx="0"></div>
+              <div class="flow-dot w-5 h-5 rounded-full border-2 border-civic-200 bg-white flex items-center justify-center" data-stage="data" title="Data"><svg class="w-2.5 h-2.5 text-civic-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+              <div class="flex-1 h-0.5 bg-civic-200 mx-0.5 flow-connector" data-idx="1"></div>
+              <div class="flow-dot w-5 h-5 rounded-full border-2 border-civic-200 bg-white flex items-center justify-center" data-stage="synthesis" title="Synthesis"><svg class="w-2.5 h-2.5 text-civic-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 017 7c0 3-2 5-4 6.5V18H9v-2.5C7 14 5 12 5 9a7 7 0 017-7z"/><path d="M9 22h6"/><path d="M9 18h6"/></svg></div>
+              <div class="flex-1 h-0.5 bg-civic-200 mx-0.5 flow-connector" data-idx="2"></div>
+              <div class="flow-dot w-5 h-5 rounded-full border-2 border-civic-200 bg-white flex items-center justify-center" data-stage="report" title="Report"><svg class="w-2.5 h-2.5 text-civic-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            </div>
+          </div>
+          <!-- Stage Cards -->
+          <div id="trace-content" class="p-3 space-y-1.5">
+            <p class="text-civic-400 text-[10px] text-center py-4">Send a message to see the pipeline trace.</p>
+          </div>
+          <!-- Performance Waterfall -->
+          <div id="waterfall-section" class="hidden border-t border-civic-100 p-3">
+            <h3 class="text-[10px] font-bold text-civic-700 mb-1.5 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              Waterfall
+            </h3>
+            <div id="waterfall-chart" class="space-y-1"></div>
+            <div id="waterfall-total" class="text-[10px] text-civic-500 mt-1.5 text-right"></div>
+          </div>
+          <!-- RAG Sources -->
+          <div id="rag-section" class="hidden border-t border-civic-100 p-3">
+            <h3 class="text-[10px] font-bold text-indigo-700 mb-1.5 flex items-center gap-1"><svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg> RAG Sources</h3>
+            <div id="rag-content" class="space-y-1"></div>
+          </div>
+          <!-- Coverage Gauge -->
+          <div id="coverage-section" class="hidden border-t border-civic-100 p-3">
+            <h3 class="text-[10px] font-bold text-civic-700 mb-1.5">Coverage</h3>
+            <div id="coverage-gauge"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat FAB (Floating Action Button) -->
+  <button id="chat-fab" onclick="toggleChatWidget()" class="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl hover:shadow-2xl transition-all flex items-center justify-center fab-pulse" title="Open AI Chat (Ctrl+Shift+K)">
+    <svg id="fab-icon-chat" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span id="fab-unread" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">!</span>
+  </button>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-civic-200 z-40 safe-area-bottom">
+    <div class="flex justify-around items-center h-14 px-2">
+      <button class="bottom-nav-item active flex flex-col items-center gap-0.5 py-1 px-3 text-indigo-600 relative" data-nav="home" onclick="setActiveNav(this)">
+        <div class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-full"></div>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="text-[10px] font-medium">Home</span>
+      </button>
+      <button class="bottom-nav-item flex flex-col items-center gap-0.5 py-1 px-3 text-civic-400 relative" data-nav="report" onclick="setActiveNav(this); window.openServicePortal?.()">
+        <div class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-full"></div>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="text-[10px] font-medium">Report</span>
+      </button>
+      <button class="bottom-nav-item flex flex-col items-center gap-0.5 py-1 px-3 text-civic-400 relative" data-nav="map" onclick="setActiveNav(this); window.openCivicMap?.()">
+        <div class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-full"></div>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        <span class="text-[10px] font-medium">Map</span>
+      </button>
+      <button class="bottom-nav-item flex flex-col items-center gap-0.5 py-1 px-3 text-civic-400 relative" data-nav="dashboard" onclick="setActiveNav(this); window.openDashboard?.()">
+        <div class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-full"></div>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="text-[10px] font-medium">Analytics</span>
+      </button>
+      <button class="bottom-nav-item flex flex-col items-center gap-0.5 py-1 px-3 text-civic-400 relative" data-nav="reports" onclick="setActiveNav(this); window.openReportGenerator?.()">
+        <div class="nav-indicator absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-full"></div>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="text-[10px] font-medium">Reports</span>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    const messagesDiv = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const traceContent = document.getElementById('trace-content');
+
+    // ── Mobile Navigation ──
+    let chatWidgetOpen = false;
+    let tracePanelOpen = false;
+    let chatSize = 'compact'; // 'compact' | 'expanded' | 'fullscreen'
+    let currentPageContext = 'home';
+    let messageCount = 0;
+
+    function setActiveNav(btn) {
+      document.querySelectorAll('.bottom-nav-item').forEach(b => {
+        b.classList.remove('active');
+        b.classList.remove('text-indigo-600');
+        b.classList.add('text-civic-400');
+      });
+      btn.classList.add('active');
+      btn.classList.remove('text-civic-400');
+      btn.classList.add('text-indigo-600');
+    }
+
+    // ── Chat Size Management ──
+    function setChatSize(size) {
+      const widget = document.getElementById('chat-widget');
+      chatSize = size;
+      widget.classList.remove('chat-compact', 'chat-expanded', 'chat-fullscreen');
+      widget.classList.add('chat-' + size);
+
+      // Update size buttons
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('chat-size-' + size)?.classList.add('active');
+
+      // Reset positioning for expanded/fullscreen
+      if (size === 'compact') {
+        widget.style.cssText = '';
+        document.body.style.overflow = '';
+      } else if (size === 'expanded') {
+        widget.style.cssText = 'top:0;bottom:0;right:0;left:auto;';
+        document.body.style.overflow = '';
+      } else if (size === 'fullscreen') {
+        widget.style.cssText = 'inset:0;';
+        document.body.style.overflow = 'hidden';
+      }
+
+      // Focus input after resize
+      setTimeout(() => input.focus(), 100);
+    }
+    window.setChatSize = setChatSize;
+
+    // ── Auto-expand on conversation depth ──
+    function maybeAutoExpand() {
+      if (chatSize === 'compact' && messageCount >= 4) {
+        setChatSize('expanded');
+      }
+    }
+
+    // ── Page Context Awareness ──
+    const PAGE_CONTEXTS = {
+      home: {
+        label: 'Dashboard',
+        icon: '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>',
+        suggestions: [
+          { text: 'What\'s the overall status of open issues?', icon: '📊' },
+          { text: 'Which areas need attention?', icon: '🗺️' },
+          { text: 'Any recent updates or trends?', icon: '📈' },
+        ]
+      },
+      map: {
+        label: 'Map View',
+        icon: '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>',
+        suggestions: [
+          { text: 'Where are the most reported issues?', icon: '📍' },
+          { text: 'Any safety concerns in this area?', icon: '⚠️' },
+          { text: 'Show me high-priority locations', icon: '🏫' },
+        ]
+      },
+      portal: {
+        label: 'Service Portal',
+        icon: '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/></svg>',
+        suggestions: [
+          { text: 'How do I submit a request?', icon: '🔧' },
+          { text: 'Can I check on an existing request?', icon: '🔍' },
+          { text: 'What types of issues can I report?', icon: '❓' },
+        ]
+      },
+      dashboard: {
+        label: 'Analytics Dashboard',
+        icon: '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/></svg>',
+        suggestions: [
+          { text: 'What do the numbers look like?', icon: '💰' },
+          { text: 'How are different areas comparing?', icon: '📊' },
+          { text: 'What should we expect going forward?', icon: '🔮' },
+        ]
+      },
+      report: {
+        label: 'Report Generator',
+        icon: '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>',
+        suggestions: [
+          { text: 'Help me build a report', icon: '📝' },
+          { text: 'What reports can I generate?', icon: '🛡️' },
+          { text: 'Summarize recent activity', icon: '📋' },
+        ]
+      }
+    };
+
+    function setPageContext(context) {
+      currentPageContext = context;
+      updateContextBar();
+    }
+    window.setPageContext = setPageContext;
+
+    function updateContextBar() {
+      const ctx = PAGE_CONTEXTS[currentPageContext] || PAGE_CONTEXTS.home;
+      const contextText = document.getElementById('chat-context-text');
+      const suggestionsDiv = document.getElementById('context-suggestions');
+
+      contextText.textContent = ctx.label + ' — Ask anything relevant to this view';
+
+      suggestionsDiv.innerHTML = ctx.suggestions.map(s =>
+        `<button onclick="askSuggestion(this)" class="context-chip text-xs bg-white/80 border border-indigo-200/60 text-indigo-700 px-2.5 py-1.5 rounded-lg hover:bg-white flex items-center gap-1.5 whitespace-nowrap">
+          <span>${s.icon}</span> ${escapeHtml(s.text)}
+        </button>`
+      ).join('');
+    }
+
+    // Hook into existing overlay open functions to set page context
+    const _origOpenMap = window.openCivicMap;
+    const _origOpenPortal = window.openServicePortal;
+    const _origOpenDashboard = window.openDashboard;
+    const _origOpenReport = window.openReportGenerator;
+
+    // We'll re-hook after modules load (below)
+    function hookPageContextTracking() {
+      if (window.openCivicMap && window.openCivicMap !== hookOpenCivicMap) {
+        const orig = window.openCivicMap;
+        window.openCivicMap = function() { setPageContext('map'); return orig.apply(this, arguments); };
+      }
+      if (window.openServicePortal && window.openServicePortal !== hookOpenServicePortal) {
+        const orig = window.openServicePortal;
+        window.openServicePortal = function() { setPageContext('portal'); return orig.apply(this, arguments); };
+      }
+      if (window.openDashboard && window.openDashboard !== hookOpenDashboard) {
+        const orig = window.openDashboard;
+        window.openDashboard = function() { setPageContext('dashboard'); return orig.apply(this, arguments); };
+      }
+      if (window.openReportGenerator && window.openReportGenerator !== hookOpenReportGenerator) {
+        const orig = window.openReportGenerator;
+        window.openReportGenerator = function() { setPageContext('report'); return orig.apply(this, arguments); };
+      }
+    }
+    // Placeholder refs to avoid re-hooking
+    function hookOpenCivicMap() {}
+    function hookOpenServicePortal() {}
+    function hookOpenDashboard() {}
+    function hookOpenReportGenerator() {}
+
+    // ── Clear Chat ──
+    function clearChatHistory() {
+      messagesDiv.innerHTML = '';
+      messageCount = 0;
+      // Re-add welcome
+      const welcomeHtml = `
+        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100 msg-animate">
+          <p class="text-sm font-semibold text-indigo-800 mb-2">Welcome to CivicLens AI</p>
+          <p class="text-xs text-indigo-600/70 mb-3">I can help with infrastructure questions, service requests, safety reports, and data analysis.</p>
+        </div>`;
+      messagesDiv.innerHTML = welcomeHtml;
+      updateContextBar();
+      if (chatSize !== 'compact') setChatSize('compact');
+    }
+    window.clearChatHistory = clearChatHistory;
+
+    // ── Chat Widget Toggle ──
+    function toggleChatWidget() {
+      const widget = document.getElementById('chat-widget');
+      const fab = document.getElementById('chat-fab');
+      const unread = document.getElementById('fab-unread');
+      if (chatWidgetOpen) {
+        widget.classList.add('chat-close');
+        widget.classList.remove('chat-open');
+        setTimeout(() => { widget.classList.add('hidden'); widget.classList.remove('chat-close'); }, 280);
+        fab.classList.remove('hidden');
+        chatWidgetOpen = false;
+        if (chatSize === 'fullscreen') document.body.style.overflow = '';
+      } else {
+        widget.classList.remove('hidden');
+        widget.classList.add('chat-open');
+        setTimeout(() => widget.classList.remove('chat-open'), 320);
+        fab.classList.add('hidden');
+        unread?.classList.add('hidden');
+        chatWidgetOpen = true;
+        input.focus();
+        updateContextBar();
+      }
+    }
+    window.toggleChatWidget = toggleChatWidget;
+
+    // ── Trace Panel Toggle (inside chat widget) ──
+    document.getElementById('chat-trace-toggle')?.addEventListener('click', () => {
+      const panel = document.getElementById('trace-panel');
+      tracePanelOpen = !tracePanelOpen;
+      panel.classList.toggle('hidden', !tracePanelOpen);
+    });
+
+    // ── Keyboard Shortcuts ──
+    document.addEventListener('keydown', (e) => {
+      // Escape to close/shrink
+      if (e.key === 'Escape' && chatWidgetOpen) {
+        if (chatSize === 'fullscreen') { setChatSize('expanded'); return; }
+        if (chatSize === 'expanded') { setChatSize('compact'); return; }
+        toggleChatWidget();
+      }
+      // Ctrl+Shift+K to toggle chat
+      if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+        e.preventDefault();
+        toggleChatWidget();
+      }
+    });
+
+    // ── AI Service Request Integration ──
+    // When AI detects a service request intent, show a card to create it via the portal
+    function showServiceRequestCard(intentData) {
+      const card = document.createElement('div');
+      card.className = 'msg-animate';
+      const category = intentData?.filters?.category || intentData?.action_params?.category || '';
+      const address = intentData?.filters?.street || intentData?.action_params?.address || '';
+      const description = intentData?.summary || '';
+      card.innerHTML = `
+        <div class="sr-create-card bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 shadow-sm cursor-pointer" onclick="openPrefilled('${escapeHtml(category)}','${escapeHtml(address)}','${escapeHtml(description)}')">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              ${CivicIcons.plus('w-5 h-5 text-emerald-600')}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-emerald-900">Create Service Request</p>
+              <p class="text-xs text-emerald-600 truncate">Tap to open the form pre-filled with your issue details</p>
+            </div>
+            <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </div>`;
+      messagesDiv.appendChild(card);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function openPrefilled(category, address, description) {
+      // Store pre-fill data for the service portal to pick up
+      window._srPrefill = { category, address, description };
+      window.openServicePortal?.();
+    }
+
+    // Stage metadata
+    const STAGES = [
+      { key: 'intent', name: 'Intent Classification', icon: '<svg class="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>', color: 'indigo', desc: 'NLP classifies query type & extracts filters' },
+      { key: 'data', name: 'Data Retrieval (MCP)', icon: '<svg class="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', color: 'blue', desc: 'Fetches from 8 MCP tools via JSON-RPC 2.0' },
+      { key: 'synthesis', name: 'AI Report Synthesis', icon: '<svg class="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 017 7c0 3-2 5-4 6.5V18H9v-2.5C7 14 5 12 5 9a7 7 0 017-7z"/><path d="M9 22h6"/><path d="M9 18h6"/></svg>', color: 'purple', desc: 'GPT-4o-mini + RAG knowledge grounding' },
+      { key: 'report', name: 'Report Formatting', icon: '<svg class="w-4 h-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>', color: 'green', desc: 'Evidence-based coverage scoring & markdown' },
+    ];
+
+    const stageState = {};  // tracks live state of each stage
+    let pipelineStartTime = null;
+    let timerInterval = null;
+
+    function askSuggestion(btn) {
+      if (!chatWidgetOpen) toggleChatWidget();
+      input.value = btn.textContent.trim();
+      form.dispatchEvent(new Event('submit'));
+    }
+
+    function addMessage(role, content) {
+      messageCount++;
+      const div = document.createElement('div');
+      div.className = `msg-animate ${role === 'user' ? 'ml-auto max-w-[85%]' : 'max-w-full'}`;
+      if (role === 'user') {
+        div.innerHTML = `<div class="bg-gradient-to-r from-civic-800 to-indigo-800 text-white rounded-2xl rounded-br-md px-4 py-2.5 inline-block text-sm shadow-sm">${escapeHtml(content)}</div>`;
+      } else {
+        // Process long AI responses: add collapsible sections if content is long
+        let processedContent = content;
+        if (content.length > 800) {
+          processedContent = makeCollapsibleSections(content);
+        }
+        div.innerHTML = `
+          <div class="bg-white rounded-2xl rounded-bl-md p-4 shadow-sm border border-civic-100 prose text-sm leading-relaxed">
+            ${processedContent}
+          </div>
+          <div class="flex items-center gap-3 mt-1.5 ml-1">
+            <button onclick="copyMessage(this)" class="text-[10px] text-civic-300 hover:text-indigo-500 flex items-center gap-1 transition">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy
+            </button>
+          </div>`;
+      }
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      // Auto-expand for longer conversations
+      maybeAutoExpand();
+
+      // Show unread indicator if chat is closed
+      if (!chatWidgetOpen) {
+        document.getElementById('fab-unread')?.classList.remove('hidden');
+      }
+      return div;
+    }
+
+    // Make long responses collapsible by h2/h3 sections
+    function makeCollapsibleSections(html) {
+      // Split by h2 headers and wrap each in a collapsible section
+      const parts = html.split(/(<h2[^>]*>.*?<\/h2>)/gi);
+      if (parts.length <= 2) return html; // Not enough sections to collapse
+
+      let result = '';
+      let sectionIdx = 0;
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (part.match(/<h2[^>]*>/i)) {
+          // This is a header — wrap the next content in a collapsible section
+          const nextContent = parts[i + 1] || '';
+          result += `
+            <div class="response-section">
+              <div class="response-section-toggle flex items-center gap-1.5" onclick="toggleSection(this)">
+                <svg class="w-3 h-3 text-indigo-400 transition-transform section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                ${part}
+              </div>
+              <div class="response-section-body" id="section-${sectionIdx++}">
+                ${nextContent}
+              </div>
+            </div>`;
+          i++; // Skip the content part since we included it
+        } else {
+          result += part;
+        }
+      }
+      return result;
+    }
+
+    function toggleSection(el) {
+      const body = el.nextElementSibling;
+      const arrow = el.querySelector('.section-arrow');
+      body.classList.toggle('collapsed');
+      arrow.style.transform = body.classList.contains('collapsed') ? 'rotate(-90deg)' : '';
+    }
+    window.toggleSection = toggleSection;
+
+    function copyMessage(btn) {
+      const prose = btn.closest('.msg-animate')?.querySelector('.prose');
+      if (!prose) return;
+      navigator.clipboard.writeText(prose.innerText).then(() => {
+        btn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+        setTimeout(() => {
+          btn.innerHTML = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy';
+        }, 2000);
+      });
+    }
+    window.copyMessage = copyMessage;
+
+    function addThinking() {
+      const div = document.createElement('div');
+      div.id = 'thinking';
+      div.innerHTML = `
+        <div class="bg-white rounded-xl px-3 py-2.5 shadow-sm border border-civic-100 flex items-center gap-2 text-civic-500 text-xs">
+          <span class="thinking-dot w-2 h-2 bg-civic-500 rounded-full inline-block"></span>
+          <span class="thinking-dot w-2 h-2 bg-civic-500 rounded-full inline-block"></span>
+          <span class="thinking-dot w-2 h-2 bg-civic-500 rounded-full inline-block"></span>
+          <span class="ml-1">Processing...</span>
+        </div>`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function removeThinking() {
+      const el = document.getElementById('thinking');
+      if (el) el.remove();
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    // ── Pipeline Timer ──
+    function startTimer() {
+      pipelineStartTime = Date.now();
+      const timerEl = document.getElementById('pipeline-timer');
+      const timerVal = document.getElementById('timer-value');
+      timerEl.classList.remove('hidden');
+      timerInterval = setInterval(() => {
+        const elapsed = ((Date.now() - pipelineStartTime) / 1000).toFixed(1);
+        timerVal.textContent = elapsed + 's';
+      }, 100);
+    }
+
+    function stopTimer(totalMs) {
+      clearInterval(timerInterval);
+      document.getElementById('timer-value').textContent = (totalMs / 1000).toFixed(1) + 's';
+    }
+
+    // ── Flow Dot Updates ──
+    function updateFlowDots(stageKey, status) {
+      const dots = document.querySelectorAll('.flow-dot');
+      const connectors = document.querySelectorAll('.flow-connector');
+      const idx = STAGES.findIndex(s => s.key === stageKey);
+      if (idx < 0) return;
+
+      const dot = dots[idx];
+      if (status === 'running') {
+        dot.classList.add('pulse-active');
+        dot.style.borderColor = '#6366f1';
+        dot.style.background = '#eef2ff';
+      } else if (status === 'completed') {
+        dot.classList.remove('pulse-active');
+        dot.style.borderColor = '#22c55e';
+        dot.style.background = '#dcfce7';
+        if (idx > 0) {
+          connectors[idx - 1].style.background = '#22c55e';
+          connectors[idx - 1].style.height = '3px';
+        }
+      }
+    }
+
+    function resetFlowDots() {
+      document.querySelectorAll('.flow-dot').forEach(d => {
+        d.classList.remove('pulse-active');
+        d.style.borderColor = '#bcccdc';
+        d.style.background = 'white';
+      });
+      document.querySelectorAll('.flow-connector').forEach(c => {
+        c.style.background = '#bcccdc';
+        c.style.height = '2px';
+      });
+    }
+
+    // ── Stage Card Rendering ──
+    function renderStageCard(stage, data) {
+      const meta = STAGES.find(s => s.key === stage.key) || STAGES[0];
+      const isRunning = data.status === 'running';
+      const isComplete = data.status === 'completed';
+      const statusClass = isRunning ? 'running' : isComplete ? 'completed' : 'waiting';
+
+      let statusIcon = '';
+      if (isRunning) statusIcon = `<div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full spinner"></div>`;
+      else if (isComplete) statusIcon = `<span class="text-green-500 text-sm font-bold">✓</span>`;
+      else statusIcon = `<span class="text-civic-300 text-sm">○</span>`;
+
+      let detailHtml = '';
+      if (data.detail && isComplete) {
+        detailHtml = renderStageDetail(stage.key, data.detail);
+      }
+
+      let durationBadge = '';
+      if (data.duration_ms != null) {
+        const color = data.duration_ms < 500 ? 'green' : data.duration_ms < 2000 ? 'yellow' : 'red';
+        durationBadge = `<span class="text-xs px-1.5 py-0.5 rounded bg-${color}-100 text-${color}-700 font-mono">${data.duration_ms}ms</span>`;
+      }
+
+      return `
+        <div class="stage-card stage-animate border rounded-lg p-3 cursor-pointer ${statusClass}" 
+             onclick="this.querySelector('.detail-expand')?.classList.toggle('open')" 
+             style="animation-delay: ${data.index * 0.08}s">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">${meta.icon}</span>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-bold text-civic-800">${meta.name}</div>
+              <div class="text-xs text-civic-400">${isRunning ? meta.desc : (data.detail ? summarizeDetail(stage.key, data.detail) : meta.desc)}</div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${durationBadge}
+              ${statusIcon}
+            </div>
+          </div>
+          ${detailHtml ? `<div class="detail-expand mt-2 border-t border-civic-100 pt-2">${detailHtml}</div>` : ''}
+        </div>`;
+    }
+
+    function summarizeDetail(key, detail) {
+      switch (key) {
+        case 'intent': return `→ ${detail.intent?.replace(/_/g, ' ')} — "${(detail.summary || '').slice(0, 50)}"`;
+        case 'data': {
+          const tools = detail.tools_called?.length || 0;
+          const errs = detail.errors?.length || 0;
+          return `${tools} tools · ${detail.records_fetched || 0} records${errs ? ` · ${CivicIcons.alertTriangle('w-3 h-3 inline')} ${errs} errors` : ''}`;
+        }
+        case 'synthesis': return `${detail.findings || 0} findings · ${detail.sections || 0} sections · ${detail.recommendations || 0} actions`;
+        case 'report': return `Coverage: ${detail.data_coverage?.score || '?'}% · ${detail.markdown_length || 0} chars`;
+        default: return '';
+      }
+    }
+
+    function renderStageDetail(key, detail) {
+      let html = '<div class="space-y-1.5">';
+      switch (key) {
+        case 'intent':
+          html += detailRow('Intent', `<span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs font-medium">${detail.intent?.replace(/_/g, ' ')}</span>`);
+          html += detailRow('Summary', detail.summary || '—');
+          if (detail.filters && Object.keys(detail.filters).some(k => detail.filters[k])) {
+            const filters = Object.entries(detail.filters).filter(([,v]) => v).map(([k,v]) => `${k}: ${v}`).join(', ');
+            html += detailRow('Filters', filters);
+          }
+          break;
+        case 'data':
+          if (detail.tools_called?.length) {
+            html += detailRow('Tools', detail.tools_called.map(t =>
+              `<span class="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs mb-0.5">${t.replace(/_/g, ' ')}</span>`
+            ).join(' '));
+          }
+          html += detailRow('Records', `<span class="font-bold">${detail.records_fetched}</span> fetched`);
+          if (detail.errors?.length > 0) {
+            html += `<div class="bg-red-50 border border-red-200 rounded p-2 mt-1">
+              <div class="text-xs font-bold text-red-700">${CivicIcons.alertTriangle('w-3 h-3 inline')} ${detail.errors.length} Tool Error(s):</div>
+              ${detail.errors.map(e => `<div class="text-xs text-red-600">• ${escapeHtml(e.tool)}: ${escapeHtml(e.message)}</div>`).join('')}
+            </div>`;
+          }
+          if (detail.fallback_used) {
+            html += `<div class="text-xs text-amber-600 mt-1">${CivicIcons.wrench('w-3 h-3 inline')} Fallback recovery activated</div>`;
+          }
+          break;
+        case 'synthesis':
+          html += detailRow('Model', '<span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-mono">gpt-4o-mini</span>');
+          html += detailRow('Findings', detail.findings);
+          html += detailRow('Sections', detail.sections);
+          html += detailRow('Recommendations', detail.recommendations);
+          if (detail.rag_sources?.length > 0) {
+            html += detailRow('RAG Docs', `${detail.rag_sources.length} retrieved`);
+          }
+          break;
+        case 'report':
+          if (detail.data_coverage) {
+            const c = detail.data_coverage;
+            const pct = c.score;
+            const color = pct >= 75 ? 'green' : pct >= 50 ? 'yellow' : 'red';
+            html += `<div class="mb-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-civic-500">Coverage</span>
+                <div class="flex-1 bg-civic-100 rounded-full h-2"><div class="bg-${color}-500 h-full rounded-full bar-animate" style="width:${pct}%"></div></div>
+                <span class="text-xs font-bold text-${color}-700">${pct}%</span>
+              </div>
+              <div class="text-xs text-civic-400 mt-0.5">${c.sources_consulted}/${c.total_sources} sources · ${c.records_analyzed} records</div>
+            </div>`;
+            if (c.tools_used?.length) {
+              html += `<div class="flex flex-wrap gap-1 mt-1">${c.tools_used.map(t =>
+                `<span class="inline-block px-1.5 py-0.5 bg-green-50 text-green-700 rounded text-xs">${escapeHtml(t)}</span>`
+              ).join('')}</div>`;
+            }
+          }
+          if (detail.actions_taken > 0) {
+            html += detailRow('Actions', `<span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-bold">${CivicIcons.shield('w-3 h-3 inline')} ${detail.actions_taken} pending confirmation</span>`);
+          }
+          break;
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function detailRow(label, value) {
+      return `<div class="flex items-start gap-2 text-xs"><span class="text-civic-400 whitespace-nowrap min-w-[60px]">${label}</span><span class="text-civic-700">${value}</span></div>`;
+    }
+
+    // ── Performance Waterfall ──
+    function renderWaterfall(pipeline) {
+      const section = document.getElementById('waterfall-section');
+      const chart = document.getElementById('waterfall-chart');
+      const total = document.getElementById('waterfall-total');
+      if (!pipeline?.stages?.length) { section.classList.add('hidden'); return; }
+
+      section.classList.remove('hidden');
+      const maxDuration = Math.max(...pipeline.stages.map(s => s.duration_ms));
+      const colors = ['#6366f1', '#3b82f6', '#8b5cf6', '#22c55e'];
+      const stageNames = { intent: 'Intent', data: 'MCP Data', synthesis: 'LLM + RAG', report: 'Format' };
+
+      let offset = 0;
+      chart.innerHTML = pipeline.stages.map((s, i) => {
+        const pct = Math.max((s.duration_ms / pipeline.total_duration_ms) * 100, 4);
+        const left = (offset / pipeline.total_duration_ms) * 100;
+        offset += s.duration_ms;
+        return `
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-civic-500 w-16 text-right">${stageNames[s.name] || s.name}</span>
+            <div class="flex-1 h-5 bg-civic-50 rounded relative overflow-hidden">
+              <div class="waterfall-bar absolute h-full flex items-center px-1.5" style="left:${left}%;width:${pct}%;background:${colors[i]}">
+                <span class="text-xs text-white font-mono whitespace-nowrap">${s.duration_ms}ms</span>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+
+      total.textContent = `Total: ${pipeline.total_duration_ms}ms`;
+    }
+
+    // ── RAG Sources Section ──
+    function renderRagSources(sources) {
+      const section = document.getElementById('rag-section');
+      const content = document.getElementById('rag-content');
+      if (!sources?.length) { section.classList.add('hidden'); return; }
+
+      section.classList.remove('hidden');
+      content.innerHTML = sources.map(s => {
+        const pct = (s.score * 100).toFixed(0);
+        const color = pct >= 80 ? 'green' : pct >= 50 ? 'yellow' : 'gray';
+        return `
+          <div class="bg-indigo-50/80 border border-indigo-100 rounded-lg p-2.5 stage-animate">
+            <div class="flex items-start gap-2">
+              <span class="text-xs">${CivicIcons.book('w-3 h-3')}</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-semibold text-indigo-800 leading-tight">${escapeHtml(s.title)}</div>
+                ${s.category ? `<span class="inline-block text-xs px-1 py-0.5 bg-indigo-100 text-indigo-600 rounded mt-0.5">${s.category}</span>` : ''}
+              </div>
+              <div class="flex items-center gap-1">
+                <div class="w-8 h-1.5 bg-indigo-100 rounded-full overflow-hidden"><div class="h-full bg-${color}-500 rounded-full" style="width:${pct}%"></div></div>
+                <span class="text-xs font-mono text-indigo-600">${pct}%</span>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Coverage Gauge ──
+    function renderCoverageGauge(coverage) {
+      const section = document.getElementById('coverage-section');
+      const gauge = document.getElementById('coverage-gauge');
+      if (!coverage?.score) { section.classList.add('hidden'); return; }
+
+      section.classList.remove('hidden');
+      const pct = coverage.score;
+      const color = pct >= 75 ? 'green' : pct >= 50 ? 'yellow' : 'red';
+      const circumference = 2 * Math.PI * 36;
+      const offset = circumference - (pct / 100) * circumference;
+      const colorMap = { green: '#22c55e', yellow: '#eab308', red: '#ef4444' };
+
+      gauge.innerHTML = `
+        <div class="flex items-center gap-4">
+          <div class="relative w-20 h-20 flex-shrink-0">
+            <svg class="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="36" stroke="#e5e7eb" stroke-width="6" fill="none"/>
+              <circle cx="40" cy="40" r="36" stroke="${colorMap[color]}" stroke-width="6" fill="none"
+                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"
+                style="transition: stroke-dashoffset 1s ease"/>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="text-lg font-bold text-${color}-600">${pct}%</span>
+            </div>
+          </div>
+          <div class="text-xs text-civic-500 space-y-1">
+            <div>${coverage.sources_consulted}/${coverage.total_sources} data sources queried</div>
+            <div>${coverage.records_analyzed} records analyzed</div>
+            ${coverage.tools_used ? `<div class="flex flex-wrap gap-1 mt-1">${coverage.tools_used.map(t =>
+              `<span class="px-1 py-0.5 bg-civic-100 rounded text-civic-600">${escapeHtml(t)}</span>`
+            ).join('')}</div>` : ''}
+          </div>
+        </div>`;
+    }
+
+    // ── How It Works Modal ──
+    window.showHowItWorks = function() {
+      const existing = document.getElementById('how-it-works-overlay');
+      if (existing) { existing.remove(); return; }
+      const overlay = document.createElement('div');
+      overlay.id = 'how-it-works-overlay';
+      overlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+      overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+      overlay.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-civic-900">How CivicLens Works</h2>
+            <button onclick="document.getElementById('how-it-works-overlay').remove()" class="text-civic-400 hover:text-civic-700 text-xl leading-none">&times;</button>
+          </div>
+          <div class="space-y-4 text-sm text-civic-700">
+            <div class="bg-indigo-50 rounded-lg p-4">
+              <h3 class="font-bold text-indigo-800 mb-1">${CivicIcons.target('w-4 h-4 inline')} Stage 1 — Intent Classification</h3>
+              <p>Your message is analyzed by GPT-4o-mini to determine intent (report issue, check status, safety analysis, etc.) and extract filters like zone, severity, and street names.</p>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-4">
+              <h3 class="font-bold text-blue-800 mb-1">${CivicIcons.chart('w-4 h-4 inline')} Stage 2 — ReAct Data Agent (MCP)</h3>
+              <p>A ReAct-style agent reasons step-by-step, selecting from <strong>14 MCP tools</strong> (potholes, sidewalks, schools, work orders, forecasting, cost-of-inaction, what-if budget). The agent loops up to 5 iterations, calling tools and reflecting on results until the query is fully answered.</p>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-4">
+              <h3 class="font-bold text-purple-800 mb-1">${CivicIcons.brain('w-4 h-4 inline')} Stage 3 — RAG Synthesis</h3>
+              <p>GPT-4o-mini generates a narrative grounded in a <strong>11-document knowledge base</strong> using dual retrieval (dense embeddings + TF-IDF fallback). Inline citations [1], [2] reference specific policy documents.</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4">
+              <h3 class="font-bold text-green-800 mb-1">${CivicIcons.fileText('w-4 h-4 inline')} Stage 4 — Report Formatting &amp; RAI</h3>
+              <p>The report is formatted with evidence-based coverage scoring. <strong>Responsible AI</strong> checks enforce fairness (no neighborhood-based bias), transparency (full data pipeline trace), and privacy (no PII in outputs).</p>
+            </div>
+            <div class="bg-amber-50 rounded-lg p-4">
+              <h3 class="font-bold text-amber-800 mb-1">${CivicIcons.trendUp('w-4 h-4 inline')} Weibull Survival Model</h3>
+              <p>Infrastructure priority scores use a <strong>Weibull survival analysis</strong> model — the same math used in industrial reliability engineering — to predict deterioration rates, expected failure dates, and cost-of-inaction estimates.</p>
+            </div>
+            <div class="bg-civic-50 rounded-lg p-4">
+              <h3 class="font-bold text-civic-800 mb-1">${CivicIcons.shield('w-4 h-4 inline')} Security &amp; Guardrails</h3>
+              <p>Rate limiting (60 req/min), input sanitization, RBAC (public vs supervisor roles), human-in-the-loop action confirmation, and comprehensive security headers protect the platform.</p>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-civic-100 text-xs text-civic-400 text-center">
+            Built with Node.js · GitHub Models (GPT-4o-mini) · MCP Protocol · LangChain · FAISS
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    };
+
+    // ── Report Inaccuracy ──
+    function addReportInaccuracyBtn(msgDiv) {
+      const reportBtn = document.createElement('button');
+      reportBtn.className = 'mt-2 text-xs text-civic-400 hover:text-red-500 flex items-center gap-1 transition';
+      reportBtn.innerHTML = CivicIcons.alertTriangle('w-3 h-3') + ' Report inaccuracy';
+      reportBtn.onclick = () => {
+        const note = prompt('Describe the inaccuracy (optional):');
+        if (note === null) return;
+        reportBtn.innerHTML = CivicIcons.checkCircle('w-3 h-3') + ' Feedback recorded — thank you';
+        reportBtn.disabled = true;
+        reportBtn.className = 'mt-2 text-xs text-green-500 flex items-center gap-1';
+        console.log('[CivicLens] Inaccuracy reported:', note);
+      };
+      const contentDiv = msgDiv.querySelector('.prose');
+      if (contentDiv) contentDiv.appendChild(reportBtn);
+    }
+
+    // ── Action Confirmation Modal ──
+    function showActionConfirmation(actions, onConfirm) {
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+      overlay.id = 'action-confirm-overlay';
+      const actionList = actions.map(a =>
+        `<div class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <span class="text-xl">${CivicIcons.alertTriangle('w-5 h-5')}</span>
+          <div>
+            <div class="font-semibold text-sm text-amber-900">${escapeHtml(a.label)}</div>
+            <div class="text-xs text-amber-700 font-mono">${escapeHtml(JSON.stringify(a.args))}</div>
+          </div>
+        </div>`
+      ).join('');
+      overlay.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6">
+          <h3 class="text-lg font-bold text-civic-900 mb-2">${CivicIcons.shield('w-5 h-5 inline')} Action Confirmation Required</h3>
+          <p class="text-sm text-civic-600 mb-4">The AI agent wants to perform the following actions. Please review before proceeding.</p>
+          <div class="space-y-2 mb-4">${actionList}</div>
+          <div class="flex gap-3 justify-end">
+            <button id="action-cancel" class="px-4 py-2 text-sm text-civic-600 hover:text-civic-800 border border-civic-200 rounded-lg">Cancel</button>
+            <button id="action-confirm" class="px-4 py-2 text-sm bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg">Confirm & Execute</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      document.getElementById('action-cancel').onclick = () => overlay.remove();
+      document.getElementById('action-confirm').onclick = () => { overlay.remove(); onConfirm(); };
+    }
+
+    // ── Coverage Bar (inline with messages) ──
+    function renderCoverageBar(coverage) {
+      if (!coverage?.score) return '';
+      const pct = coverage.score;
+      const color = pct >= 75 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-red-500';
+      return `<div class="mt-3 flex items-center gap-2">
+        <span class="text-xs text-civic-500 whitespace-nowrap">Data Coverage</span>
+        <div class="flex-1 bg-civic-100 rounded-full h-2 overflow-hidden">
+          <div class="${color} h-full rounded-full transition-all" style="width: ${pct}%"></div>
+        </div>
+        <span class="text-xs font-medium text-civic-700">${pct}%</span>
+      </div>
+      <div class="text-xs text-civic-400 mt-1">${coverage.sources_consulted}/${coverage.total_sources} sources · ${coverage.records_analyzed} records</div>`;
+    }
+
+    // ── Pipeline Reset ──
+    function resetPipeline() {
+      Object.keys(stageState).forEach(k => delete stageState[k]);
+      resetFlowDots();
+      document.getElementById('pipeline-subtitle').textContent = 'Running pipeline...';
+      document.getElementById('waterfall-section').classList.add('hidden');
+      document.getElementById('rag-section').classList.add('hidden');
+      document.getElementById('coverage-section').classList.add('hidden');
+
+      // Render all stages as waiting
+      traceContent.innerHTML = STAGES.map((s, i) => renderStageCard(s, { status: 'waiting', index: i })).join('');
+    }
+
+    // ── SSE Stage Update ──
+    function handleStageEvent(data) {
+      stageState[data.stage] = data;
+      updateFlowDots(data.stage, data.status);
+
+      // Re-render all stage cards with current state
+      traceContent.innerHTML = STAGES.map((s, i) => {
+        const state = stageState[s.key] || { status: 'waiting', index: i };
+        return renderStageCard(s, state);
+      }).join('');
+    }
+
+    // ── SSE Complete Handler ──
+    function handleComplete(data) {
+      stopTimer(data.pipeline?.total_duration_ms || 0);
+      document.getElementById('pipeline-subtitle').textContent = `Completed in ${((data.pipeline?.total_duration_ms || 0) / 1000).toFixed(1)}s`;
+
+      renderWaterfall(data.pipeline);
+      renderRagSources(data.rag_sources);
+      renderCoverageGauge(data.report_meta?.data_coverage);
+    }
+
+    // ── Main Form Submit ──
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = input.value.trim();
+      if (!message) return;
+
+      input.value = '';
+      sendBtn.disabled = true;
+      input.disabled = true;
+
+      addMessage('user', message);
+      addThinking();
+      resetPipeline();
+      startTimer();
+
+      try {
+        // Use SSE stream for live pipeline updates
+        const res = await fetch('/api/chat/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(err.error || 'Request failed');
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let finalData = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          let currentEvent = null;
+          for (const line of lines) {
+            if (line.startsWith('event: ')) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith('data: ') && currentEvent) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (currentEvent === 'stage') {
+                  handleStageEvent(data);
+                } else if (currentEvent === 'complete') {
+                  finalData = data;
+                  handleComplete(data);
+                } else if (currentEvent === 'error') {
+                  throw new Error(data.message);
+                }
+              } catch (parseErr) {
+                if (parseErr.message !== 'Unexpected end of JSON input') throw parseErr;
+              }
+              currentEvent = null;
+            }
+          }
+        }
+
+        removeThinking();
+
+        if (finalData) {
+          const html = marked.parse(finalData.markdown || 'No response');
+          const coverageHtml = renderCoverageBar(finalData.report_meta?.data_coverage);
+          const msgDiv = addMessage('assistant', html + coverageHtml);
+          addReportInaccuracyBtn(msgDiv);
+
+          if (finalData.actions_taken?.length > 0) {
+            showActionConfirmation(finalData.actions_taken, () => {
+              addMessage('assistant', '<div class="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">' + CivicIcons.checkCircle('w-4 h-4 inline') + ' Actions confirmed and logged to audit trail.</div>');
+            });
+          }
+
+          // AI Service Request Integration: Show create-request card when intent is service_request_submit
+          const intentStage = stageState['intent'];
+          const detectedIntent = intentStage?.detail?.intent || '';
+          if (detectedIntent === 'service_request_submit') {
+            showServiceRequestCard(intentStage?.detail || {});
+          }
+        } else {
+          addMessage('assistant', '<p class="text-red-600">Pipeline completed but no report was generated.</p>');
+        }
+      } catch (err) {
+        removeThinking();
+        clearInterval(timerInterval);
+        addMessage('assistant', `<p class="text-red-600">Error: ${escapeHtml(err.message)}</p>`);
+        document.getElementById('pipeline-subtitle').textContent = 'Pipeline failed';
+      }
+
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    });
+
+    // ── Dashboard Home ──
+    async function loadDashboard() {
+      const loading = document.getElementById('dash-loading');
+      const content = document.getElementById('dash-content');
+      try {
+        const res = await fetch('/api/community');
+        const data = await res.json();
+        const s = data.stats || {};
+        const zones = data.neighborhood_scores || {};
+        const zoneKeys = Object.keys(zones);
+        const gradeColor = g => g === 'A' ? 'emerald' : g === 'B' ? 'blue' : g === 'C' ? 'yellow' : g === 'D' ? 'orange' : 'red';
+
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+        const completionRate = s.total_requests ? Math.round((s.completed || 0) / s.total_requests * 100) : 0;
+        const circumference = 2 * Math.PI * 28;
+        const dashOffset = circumference - (completionRate / 100) * circumference;
+
+        content.innerHTML = `
+          <!-- Hero with greeting and embedded AI search -->
+          <div class="dash-reveal relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 md:p-10 text-white shadow-xl">
+            <div class="hero-blob" style="width:280px;height:280px;top:-100px;right:-60px"></div>
+            <div class="hero-blob" style="width:200px;height:200px;bottom:-80px;left:-40px"></div>
+            <div class="relative z-10">
+              <p class="text-white/70 text-sm font-medium mb-1">${greeting}, neighbor</p>
+              <h2 class="text-2xl md:text-3xl font-extrabold mb-2 leading-tight">How can we help<br class="hidden sm:block"/>your neighborhood?</h2>
+              <p class="text-white/60 text-sm mb-6 max-w-md">Report issues, track repairs, and stay informed about Lake Forest infrastructure — powered by AI.</p>
+              <div class="max-w-lg">
+                <button onclick="toggleChatWidget()" class="w-full flex items-center gap-3 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 rounded-2xl px-5 py-4 text-left transition-all group">
+                  <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition">
+                    ${CivicIcons.chat('w-5 h-5 text-white')}
+                  </div>
+                  <div class="flex-1">
+                    <span class="text-white/90 text-sm">Ask our AI assistant anything...</span>
+                    <span class="block text-white/40 text-xs mt-0.5">e.g. "Are there potholes near Oak Avenue?"</span>
+                  </div>
+                  <svg class="w-5 h-5 text-white/40 group-hover:text-white/70 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 Primary Actions -->
+          <div class="dash-reveal grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button onclick="window.openServicePortal?.()" class="action-hero-card group bg-white rounded-2xl p-6 border border-civic-100 shadow-sm hover:shadow-lg hover:border-emerald-200 transition-all text-left">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform">
+                ${CivicIcons.plus('w-7 h-7 text-white')}
+              </div>
+              <h3 class="text-lg font-bold text-civic-900 mb-1">Report an Issue</h3>
+              <p class="text-sm text-civic-400 leading-relaxed">Pothole, broken sidewalk, streetlight out? Let us know and we'll get it fixed.</p>
+            </button>
+            <button onclick="window.openServicePortal?.()" class="action-hero-card group bg-white rounded-2xl p-6 border border-civic-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all text-left">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform">
+                ${CivicIcons.search('w-7 h-7 text-white')}
+              </div>
+              <h3 class="text-lg font-bold text-civic-900 mb-1">Track a Request</h3>
+              <p class="text-sm text-civic-400 leading-relaxed">Already submitted something? Check the status and see when it will be resolved.</p>
+            </button>
+            <button onclick="window.openCivicMap?.()" class="action-hero-card group bg-white rounded-2xl p-6 border border-civic-100 shadow-sm hover:shadow-lg hover:border-teal-200 transition-all text-left">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-4 shadow-md group-hover:scale-110 transition-transform">
+                ${CivicIcons.mapPin('w-7 h-7 text-white')}
+              </div>
+              <h3 class="text-lg font-bold text-civic-900 mb-1">Explore the Map</h3>
+              <p class="text-sm text-civic-400 leading-relaxed">See reported issues, active repairs, and infrastructure across every neighborhood.</p>
+            </button>
+          </div>
+
+          <!-- Community Pulse -->
+          <div class="dash-reveal bg-white rounded-2xl border border-civic-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-civic-50 flex items-center justify-between">
+              <h3 class="text-base font-bold text-civic-900 flex items-center gap-2">
+                ${CivicIcons.trendUp('w-5 h-5 text-indigo-500')}
+                Community Pulse
+              </h3>
+              <span class="text-[10px] text-civic-300 uppercase tracking-wider font-medium">Live</span>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div class="text-center">
+                  <div class="relative w-16 h-16 mx-auto mb-2">
+                    <svg class="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                      <circle cx="32" cy="32" r="28" stroke="#e5e7eb" stroke-width="5" fill="none"/>
+                      <circle cx="32" cy="32" r="28" stroke="#22c55e" stroke-width="5" fill="none"
+                        stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}" stroke-linecap="round"
+                        style="transition: stroke-dashoffset 1s ease"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-sm font-bold text-green-600">${completionRate}%</span>
+                    </div>
+                  </div>
+                  <div class="text-xs text-civic-500 font-medium">Resolved</div>
+                </div>
+                <div class="text-center pulse-stat">
+                  <div class="text-3xl font-extrabold text-civic-900 mb-1">${s.completed || 0}</div>
+                  <div class="text-xs text-civic-400">Issues Fixed</div>
+                  <div class="text-[10px] text-green-500 font-medium mt-0.5">${s.recent_fixes_30d || 0} this month</div>
+                </div>
+                <div class="text-center pulse-stat">
+                  <div class="text-3xl font-extrabold text-amber-500 mb-1">${s.in_progress || 0}</div>
+                  <div class="text-xs text-civic-400">Being Repaired</div>
+                  <div class="text-[10px] text-civic-300 font-medium mt-0.5">crews active</div>
+                </div>
+                <div class="text-center pulse-stat">
+                  <div class="text-3xl font-extrabold text-blue-500 mb-1">${s.open || 0}</div>
+                  <div class="text-xs text-civic-400">Awaiting Review</div>
+                  <div class="text-[10px] text-civic-300 font-medium mt-0.5">${s.avg_resolution_days || '?'}d avg wait</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Neighborhood Grades -->
+          ${zoneKeys.length > 0 ? `
+          <div class="dash-reveal bg-white rounded-2xl border border-civic-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-civic-50 flex items-center justify-between">
+              <h3 class="text-base font-bold text-civic-900 flex items-center gap-2">
+                ${CivicIcons.mapPin('w-5 h-5 text-teal-500')}
+                Your Neighborhoods
+              </h3>
+              <button onclick="window.openCivicMap?.()" class="text-xs text-indigo-500 hover:text-indigo-700 font-medium transition">View Map &rarr;</button>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                ${zoneKeys.map(z => {
+                  const zd = zones[z];
+                  const gc = gradeColor(zd.grade);
+                  return `<div class="neighborhood-card rounded-xl p-4 border-2 border-${gc}-100 bg-gradient-to-br from-${gc}-50/50 to-white hover:border-${gc}-300 cursor-pointer" onclick="window.openCivicMap?.()">
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-sm font-bold text-civic-800">${z}</span>
+                      <span class="w-9 h-9 rounded-xl bg-${gc}-100 text-${gc}-700 font-extrabold text-base flex items-center justify-center shadow-sm">${zd.grade}</span>
+                    </div>
+                    <div class="space-y-1.5">
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-civic-400">Health</span>
+                        <div class="flex items-center gap-1.5">
+                          <div class="w-16 h-1.5 bg-civic-100 rounded-full overflow-hidden"><div class="h-full bg-${gc}-500 rounded-full" style="width:${zd.score}%"></div></div>
+                          <span class="font-semibold text-civic-600">${zd.score}</span>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-civic-400">Open</span>
+                        <span class="font-semibold text-civic-600">${zd.open_issues} issue${zd.open_issues !== 1 ? 's' : ''}</span>
+                      </div>
+                      ${zd.critical_issues ? `<div class="flex items-center gap-1 text-xs text-red-500 font-medium">${CivicIcons.alertTriangle('w-3 h-3')} ${zd.critical_issues} critical</div>` : ''}
+                    </div>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>
+          </div>` : ''}
+
+          <!-- AI Assistant Spotlight -->
+          <div class="dash-reveal bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 rounded-2xl border border-indigo-100 p-6">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+              <div class="flex-1">
+                <h3 class="text-base font-bold text-indigo-900 mb-1 flex items-center gap-2">
+                  ${CivicIcons.brain('w-5 h-5 text-indigo-500')}
+                  AI-Powered Insights
+                </h3>
+                <p class="text-sm text-indigo-600/70 mb-3">Our AI assistant knows everything about Lake Forest infrastructure. Ask it anything.</p>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="toggleChatWidget(); setTimeout(() => { input.value='What are the top open issues right now?'; form.dispatchEvent(new Event('submit')); }, 400)" class="ai-chip text-xs bg-white border border-indigo-200 text-indigo-700 px-3 py-2 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 flex items-center gap-1.5 shadow-sm">
+                    ${CivicIcons.alertTriangle('w-3.5 h-3.5 text-amber-500')}
+                    Top open issues
+                  </button>
+                  <button onclick="toggleChatWidget(); setTimeout(() => { input.value='How do I report a pothole?'; form.dispatchEvent(new Event('submit')); }, 400)" class="ai-chip text-xs bg-white border border-indigo-200 text-indigo-700 px-3 py-2 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 flex items-center gap-1.5 shadow-sm">
+                    ${CivicIcons.wrench('w-3.5 h-3.5 text-blue-500')}
+                    How to report
+                  </button>
+                  <button onclick="toggleChatWidget(); setTimeout(() => { input.value='Give me an overview of infrastructure health'; form.dispatchEvent(new Event('submit')); }, 400)" class="ai-chip text-xs bg-white border border-indigo-200 text-indigo-700 px-3 py-2 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 flex items-center gap-1.5 shadow-sm">
+                    ${CivicIcons.trendUp('w-3.5 h-3.5 text-green-500')}
+                    Health overview
+                  </button>
+                </div>
+              </div>
+              <div class="hidden md:block">
+                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                  ${CivicIcons.chat('w-10 h-10 text-white')}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Power Tools -->
+          <div class="dash-reveal grid grid-cols-2 gap-3">
+            <button onclick="window.openDashboard?.()" class="group bg-white rounded-2xl p-5 border border-civic-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all text-left">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center group-hover:bg-indigo-200 transition">${CivicIcons.chart('w-5 h-5 text-indigo-600')}</div>
+                <div>
+                  <div class="text-sm font-bold text-civic-800">Analytics Dashboard</div>
+                  <div class="text-xs text-civic-400">Deep-dive into data &amp; trends</div>
+                </div>
+              </div>
+            </button>
+            <button onclick="window.openReportGenerator?.()" class="group bg-white rounded-2xl p-5 border border-civic-100 shadow-sm hover:shadow-md hover:border-purple-200 transition-all text-left">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition">${CivicIcons.fileText('w-5 h-5 text-purple-600')}</div>
+                <div>
+                  <div class="text-sm font-bold text-civic-800">Generate Reports</div>
+                  <div class="text-xs text-civic-400">AI-powered analysis reports</div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Footer -->
+          <div class="dash-reveal text-center py-4">
+            <p class="text-xs text-civic-300">Powered by AI — GPT-4o-mini + MCP + RAG</p>
+            <button onclick="window.showHowItWorks?.()" class="text-xs text-indigo-400 hover:text-indigo-600 mt-1 transition">Learn how CivicLens works &rarr;</button>
+          </div>
+        `;
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+      } catch (err) {
+        loading.innerHTML = `<p class="text-red-500 text-sm">Failed to load dashboard: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    // Load dashboard on page load
+    loadDashboard();
+  </script>
+  <script type="module">
+    import '/nlp-dashboard.js';
+    import '/report-generator.js';
+    import '/service-portal.js';
+    import '/civic-map.js';
+    console.log('Modules loaded. openDashboard:', typeof window.openDashboard, 'openReportGenerator:', typeof window.openReportGenerator, 'openServicePortal:', typeof window.openServicePortal, 'openCivicMap:', typeof window.openCivicMap);
+
+    // Hook page context tracking after modules load
+    setTimeout(() => {
+      if (typeof hookPageContextTracking === 'function') hookPageContextTracking();
+      // Initialize context bar
+      if (typeof updateContextBar === 'function') updateContextBar();
+    }, 200);
+  </script>
+</body>
+</html>

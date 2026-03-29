@@ -1,0 +1,11 @@
+{
+  "id": "noaa_weather_Northern_Illinois_Freeze_Thaw_Climate_Da_c0",
+  "sourceId": "noaa_weather",
+  "category": "weather",
+  "title": "Northern Illinois Freeze-Thaw Climate Data (NOAA NCEI)",
+  "content": "NOAA National Centers for Environmental Information historical data for Lake County, IL: Average annual freeze-thaw cycles: 70-85 (measured as days where temperature crosses 32°F). Peak freeze-thaw months: November (8-12 cycles), December (10-15), January (12-18), February (10-16), March (10-14). Average winter precipitation: 8.5 inches (liquid equivalent). Average annual snowfall: 36-42 inches. Road salt application threshold: 32°F and falling or when black ice risk is elevated. De-icing chemical degradation: NaCl weakens asphalt binder at roughly 3x the rate of plain water. Spring pothole surge typically peaks in late March/early April when deep frost heaves thaw. Source: NOAA NCEI Climate Normals 1991-2020, Station USW00094846 (Chicago O'Hare).",
+  "url": "https://www.ncei.noaa.gov/access/us-climate-normals/",
+  "fetchedAt": "2026-03-28T15:17:22.988Z",
+  "chunkIndex": 0,
+  "totalChunks": 1
+}

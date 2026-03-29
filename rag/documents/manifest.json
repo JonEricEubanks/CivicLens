@@ -1,0 +1,93 @@
+{
+  "lastUpdated": "2026-03-28T15:17:27.541Z",
+  "sources": [
+    {
+      "id": "chicago_311",
+      "name": "Chicago 311 Service Requests (Socrata API)",
+      "category": "benchmarks",
+      "description": "Live 311 pothole/sidewalk/streetlight data from Chicago Open Data Portal"
+    },
+    {
+      "id": "fhwa_road",
+      "name": "FHWA Road Condition Standards",
+      "category": "repair_standards",
+      "description": "Federal Highway Administration pavement and road maintenance standards"
+    },
+    {
+      "id": "ada_standards",
+      "name": "ADA Accessibility Standards (Access Board)",
+      "category": "safety",
+      "description": "Federal ADA standards for public rights-of-way and sidewalks"
+    },
+    {
+      "id": "noaa_weather",
+      "name": "NOAA Weather Data — Lake Forest / Northern Illinois",
+      "category": "weather",
+      "description": "Live weather observations and freeze-thaw cycle data from NWS"
+    },
+    {
+      "id": "nces_schools",
+      "name": "NCES School Directory — Lake Forest, IL",
+      "category": "safety",
+      "description": "Federal school data: locations, enrollment, grades served"
+    },
+    {
+      "id": "census_acs",
+      "name": "Census ACS — Lake Forest Community Profile",
+      "category": "budget",
+      "description": "Demographic and economic data for equity analysis"
+    },
+    {
+      "id": "apwa_practices",
+      "name": "APWA Infrastructure Management Best Practices",
+      "category": "repair_standards",
+      "description": "APWA asset management frameworks and emerging practices"
+    },
+    {
+      "id": "idot_roads",
+      "name": "Illinois DOT — Road Condition & MFT Data",
+      "category": "municipal_code",
+      "description": "State highway code requirements and Motor Fuel Tax allocations"
+    },
+    {
+      "id": "srts",
+      "name": "Safe Routes to School — Federal & Illinois Guidelines",
+      "category": "safety",
+      "description": "SRTS program requirements for infrastructure near schools"
+    }
+  ],
+  "documents": [
+    {
+      "id": "noaa_weather_NWS_7_Day_Forecast___Lake_Forest__IL__fe_c0",
+      "sourceId": "noaa_weather",
+      "category": "weather",
+      "title": "NWS 7-Day Forecast — Lake Forest, IL (fetched 2026-03-28)",
+      "fetchedAt": "2026-03-28T15:17:22.988Z",
+      "url": "https://api.weather.gov/gridpoints/LOT/67,89/forecast"
+    },
+    {
+      "id": "noaa_weather_Northern_Illinois_Freeze_Thaw_Climate_Da_c0",
+      "sourceId": "noaa_weather",
+      "category": "weather",
+      "title": "Northern Illinois Freeze-Thaw Climate Data (NOAA NCEI)",
+      "fetchedAt": "2026-03-28T15:17:22.988Z",
+      "url": "https://www.ncei.noaa.gov/access/us-climate-normals/"
+    },
+    {
+      "id": "fhwa_road_FHWA_Performance_Measures___Pavement_Con_c0",
+      "sourceId": "fhwa_road",
+      "category": "repair_standards",
+      "title": "FHWA Performance Measures — Pavement Condition (23 CFR 490)",
+      "fetchedAt": "2026-03-28T15:17:27.539Z",
+      "url": "https://www.ecfr.gov/current/title-23/chapter-I/subchapter-E/part-490"
+    },
+    {
+      "id": "fhwa_road_FHWA_Road_Safety_Audit_Guidelines__FHWA__c0",
+      "sourceId": "fhwa_road",
+      "category": "repair_standards",
+      "title": "FHWA Road Safety Audit Guidelines (FHWA-SA-06-06)",
+      "fetchedAt": "2026-03-28T15:17:27.539Z",
+      "url": "https://safety.fhwa.dot.gov/rsa/guidelines/"
+    }
+  ]
+}
