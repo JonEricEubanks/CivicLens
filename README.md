@@ -5,7 +5,6 @@
 ### Municipal Intelligence Reporter
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-civiclens--app.azurewebsites.net-0078D4?style=for-the-badge&logo=microsoft-azure&logoColor=white)](https://civiclens-app.azurewebsites.net)
-[![Watch Demo](https://img.shields.io/badge/Watch%20Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/rFCUO5acv5Q)
 [![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MCP Protocol](https://img.shields.io/badge/MCP-JSON--RPC%202.0-blueviolet?style=flat-square)](https://modelcontextprotocol.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
@@ -18,12 +17,6 @@
 <br>
 
 <img src="src/Assets/Homescreen%20(3).png" alt="CivicLens Dashboard" width="90%">
-
-<br>
-
-[![Watch the Demo](https://img.youtube.com/vi/rFCUO5acv5Q/maxresdefault.jpg)](https://youtu.be/rFCUO5acv5Q)
-
-**▶️ Watch the full demo on YouTube**
 
 </div>
 
@@ -372,7 +365,7 @@ civiclens/
 
 <div align="center">
 
-**[Live Demo](https://civiclens-app.azurewebsites.net)** · **[Watch Demo](https://youtu.be/rFCUO5acv5Q)** · **[Reasoning Log](REASONING.md)** · **[Changelog](CHANGELOG.md)** · **[Blog Post](BLOG.md)**
+**[Live Demo](https://civiclens-app.azurewebsites.net)** · **[Reasoning Log](REASONING.md)** · **[Changelog](CHANGELOG.md)** · **[Blog Post](BLOG.md)**
 
 MIT License
 

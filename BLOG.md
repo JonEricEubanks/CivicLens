@@ -1,9 +1,6 @@
-## Building CivicLens: A Multi-Agent AI Platform for Municipal Infrastructure Intelligence
+# Building CivicLens: A Multi-Agent AI Platform for Municipal Infrastructure Intelligence
 
-![Homescreen](https://github.com/JonEricEubanks/CivicLens/raw/main/src/Assets/Homescreen%20(3).png)
-
-
-*How I built an agentic AI system that helps residents report potholes, predict infrastructure failures, and hold local government accountable, using JavaScript, GitHub Models, and the Model Context Protocol.*
+*How I built an agentic AI system that helps residents report potholes, predict infrastructure failures, and hold local government accountable — using JavaScript, GitHub Models, and the Model Context Protocol.*
 
 ---
 
@@ -11,24 +8,19 @@
 
 Every city maintains databases of potholes, broken sidewalks, and work orders. But this data is locked behind FOIA requests, 311 phone trees, and PDF reports nobody reads.
 
-I live near Lake Forest, Illinois. When my neighbor asked "are there any potholes near the school?" the answer required calling public works, waiting on hold, and hoping someone could cross-reference repair logs with school locations. That's a question a machine should answer in seconds.
+I live in Lake Forest, Illinois. When my neighbor asked "are there any potholes near the school?" the answer required calling public works, waiting on hold, and hoping someone could cross-reference repair logs with school locations. That's a question a machine should answer in seconds.
 
-**CivicLens** is my answer: an AI agent that turns municipal infrastructure data into plain-language intelligence, lets residents file service requests on a map, and uses a Weibull survival model to help staff predict which repairs are most likely to fail next.
+**CivicLens** is my answer: an AI agent that turns municipal infrastructure data into plain-language intelligence, lets residents file service requests on a map, and uses a Weibull survival model to predict which repairs will fail next.
 
 ---
 
 ## Architecture: A 5-Stage Multi-Agent Pipeline
 
-
-![Pipeline](https://github.com/JonEricEubanks/CivicLens/raw/main/src/Assets/Citizen%20Insights%20(9).png)
-
-
-
 ```
 Intent Classification (4-model vote) → ReAct Data Agent → Quality Feedback → RAG Synthesis → Report Formatting
 ```
 
-**Stage 1 — Intent Classification:** GPT-4o-mini classifies queries into 12 intent classes and extracts structured filters. But here's the twist: **four classifiers vote in parallel** GPT-4o-mini, Phi-3-mini-4k-instruct, a keyword baseline, and an **on-device MobileBERT model** running via ONNX Runtime (`@huggingface/transformers`). If 3 of 4 agree, consensus overrides the primary. The local ONNX model means CivicLens classifies intents even when all cloud APIs are down. A sliding-window conversation memory (10 turns, persisted to disk) handles follow-ups like "*what about sidewalks?*" without repeating context.
+**Stage 1 — Intent Classification:** GPT-4o-mini classifies queries into 12 intent classes and extracts structured filters. But here's the twist: **four classifiers vote in parallel** — GPT-4o-mini, Phi-3-mini-4k-instruct, a keyword baseline, and an **on-device MobileBERT model** running via ONNX Runtime (`@huggingface/transformers`). If 3 of 4 agree, consensus overrides the primary. The local ONNX model means CivicLens classifies intents even when all cloud APIs are down. A sliding-window conversation memory (10 turns, persisted to disk) handles follow-ups like "*what about sidewalks?*" without repeating context.
 
 **Stage 2 — ReAct Data Agent:** An LLM-driven **Reason + Act loop** that selects from 16 MCP tools, calls them in parallel, reflects on results, and iterates up to 5 times. Tool results are cached (5-min TTL). Falls back to deterministic routing if the LLM is unavailable.
 
@@ -99,11 +91,11 @@ CivicLens uses **real municipal reference data**: actual Lake Forest School Dist
 
 ## How GitHub Copilot Built This
 
-Built entirely with **GitHub Copilot Agent Mode** (Claude). I used Copilot as both builder and code reviewer — it identified a key Responsible AI gap where the app was displaying unverifiable LLM "confidence" scores. The fix: evidence-based data coverage metrics grounded in actual tool results.
+Built entirely with **GitHub Copilot Agent Mode** (Claude). Midway through, I prompted Copilot to act as a critical reviewer — it scored the project 4.94/10 and found I was displaying fabricated LLM "confidence" numbers. The fix: evidence-based data coverage metrics.
 
 From a 28-item improvement list, Copilot rewrote the data agent from switch/case to a ReAct loop, added conversation memory, implemented security hardening, built predictive forecasting, wrote 14 test suites, and set up CI — in one session.
 
-**Key lesson:** Use AI to review your AI. Copilot caught blind spots that manual testing missed, and the project was stronger for it.
+**Key lesson:** Critique before polish. Getting a harsh review first prevented sunk-cost bias on features that weren't scoring well.
 
 ---
 
