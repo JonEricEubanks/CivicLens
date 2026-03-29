@@ -1,5 +1,9 @@
 // One-time test script — send a branded inspection email via Power Automate webhook
-const url = process.env.POWER_AUTOMATE_URL || 'https://defaultc0b70560cbc845819fe8e8afe241c3.22.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8faea770336f40a5aedea80e9aca51e2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=CTirAmaXbFloBA1fZoQJgX_ZIHuSj0vNBccxrtsjRxc';
+const url = process.env.POWER_AUTOMATE_URL;
+if (!url) {
+  console.error('POWER_AUTOMATE_URL environment variable is not set.');
+  process.exit(1);
+}
 
 const sr_id = 'SR-2026-001';
 const inspDate = '2026-04-02';
