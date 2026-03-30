@@ -2334,54 +2334,54 @@ window.showHowItWorks = function () {
     </div>
 
     <div class="hiw-steps grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
-      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default flex flex-col" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg);z-index:1">
         <div class="flex items-center gap-3 mb-3">
           <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, var(--md-secondary), #004d47);">01</div>
           <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Report</h4>
         </div>
-        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Residents submit infrastructure issues via the AI chat, service portal, or interactive map.</p>
+        <p class="text-xs leading-relaxed flex-1" style="color:var(--md-on-surface-variant)">Residents submit infrastructure issues via the AI chat, service portal, or interactive map.</p>
         <div class="hiw-icon mt-3 flex justify-center">
           <span class="material-symbols-outlined" style="font-size:32px;color:var(--md-secondary);opacity:0.25">edit_note</span>
         </div>
       </div>
-      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default flex flex-col" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg);z-index:1">
         <div class="flex items-center gap-3 mb-3">
           <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, var(--md-tertiary), #1d4ed8);">02</div>
           <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Analyze</h4>
         </div>
-        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">AI agents classify intent, pull data from 14 MCP tools, and score urgency using Weibull survival models.</p>
+        <p class="text-xs leading-relaxed flex-1" style="color:var(--md-on-surface-variant)">AI agents classify intent, pull data from 14 MCP tools, and score urgency using Weibull survival models.</p>
         <div class="hiw-icon mt-3 flex justify-center">
           <span class="material-symbols-outlined" style="font-size:32px;color:var(--md-tertiary);opacity:0.25">psychology</span>
         </div>
       </div>
-      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default flex flex-col" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg);z-index:1">
         <div class="flex items-center gap-3 mb-3">
           <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, #f59e0b, #d97706);">03</div>
           <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Visualize</h4>
         </div>
-        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Issues appear on a live interactive map with neighborhood grades, heatmaps, and RAG-powered insights.</p>
+        <p class="text-xs leading-relaxed flex-1" style="color:var(--md-on-surface-variant)">Issues appear on a live interactive map with neighborhood grades, heatmaps, and RAG-powered insights.</p>
         <div class="hiw-icon mt-3 flex justify-center">
           <span class="material-symbols-outlined" style="font-size:32px;color:#f59e0b;opacity:0.25">map</span>
         </div>
       </div>
-      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default flex flex-col" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg);z-index:1">
         <div class="flex items-center gap-3 mb-3">
           <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, #22c55e, #16a34a);">04</div>
           <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Resolve</h4>
         </div>
-        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Staff receive prioritized work orders, AI-drafted responses, and cost-of-inaction projections to act fast.</p>
+        <p class="text-xs leading-relaxed flex-1" style="color:var(--md-on-surface-variant)">Staff receive prioritized work orders, AI-drafted responses, and cost-of-inaction projections to act fast.</p>
         <div class="hiw-icon mt-3 flex justify-center">
           <span class="material-symbols-outlined" style="font-size:32px;color:#22c55e;opacity:0.25">task_alt</span>
         </div>
       </div>
     </div>
-    <div class="hidden lg:flex items-center justify-between mt-[-68px] mb-10 mx-12 pointer-events-none" style="z-index:0;position:relative">
+    <div class="hidden lg:flex items-center justify-between mt-[-68px] mx-12 pointer-events-none" style="z-index:0;position:relative">
       <div class="flex-1 h-0.5 mx-2" style="background:linear-gradient(90deg, var(--md-secondary), var(--md-tertiary))"></div>
       <div class="flex-1 h-0.5 mx-2" style="background:linear-gradient(90deg, var(--md-tertiary), #f59e0b)"></div>
       <div class="flex-1 h-0.5 mx-2" style="background:linear-gradient(90deg, #f59e0b, #22c55e)"></div>
     </div>
 
-    <div class="mb-8">
+    <div class="mb-8" style="margin-top:4.5rem">
       <h2 class="text-lg font-bold font-display mb-1 flex items-center gap-2" style="color:var(--md-on-surface)">
         <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-tertiary)">memory</span>
         Under the Hood
