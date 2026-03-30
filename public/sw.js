@@ -62,6 +62,9 @@ self.addEventListener('fetch', event => {
   // Skip non-GET requests (POST to /api/chat, etc.)
   if (event.request.method !== 'GET') return;
 
+  // Let the browser handle Google Fonts directly (not through SW)
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') return;
+
   // API calls: network-first with no cache fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(

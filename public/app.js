@@ -30,16 +30,21 @@ function sideNavTo(btn, page) {
   }
   // Handle Staff Ops full-page transitions
   const staffOpsPage = document.getElementById('staff-ops-page');
+  const hiwPage = document.getElementById('how-it-works-page');
   const mainContent = document.querySelector('main.main-with-sidenav');
   const aiDashBtn = document.getElementById('ai-dashboard-nav');
   if (page === 'staff-ops') {
     if (mainContent) mainContent.style.display = 'none';
+    if (hiwPage) hiwPage.style.display = 'none';
     if (aiDashBtn) aiDashBtn.style.display = '';
     // staff-ops.js openPage() handles showing the page
+  } else if (page === 'how-it-works') {
+    window.showHowItWorks();
   } else {
-    // Leaving staff-ops - restore main, close staff page
+    // Leaving staff-ops / how-it-works - restore main, close overlays
     if (mainContent) mainContent.style.display = '';
     if (staffOpsPage) staffOpsPage.style.display = 'none';
+    if (hiwPage) hiwPage.style.display = 'none';
     if (aiDashBtn) aiDashBtn.style.display = 'none';
     window._staffOps?.closePage?.();
   }
@@ -2300,57 +2305,179 @@ function renderCoverageGauge(coverage) {
   </div>`;
 }
 
-// â”€â”€ How It Works Modal â”€â”€
+// -- How It Works Full-Page View --
 window.showHowItWorks = function () {
-  const existing = document.getElementById("how-it-works-overlay");
-  if (existing) {
-    existing.remove();
-    return;
-  }
-  const overlay = document.createElement("div");
-  overlay.id = "how-it-works-overlay";
-  overlay.className =
-    "fixed inset-0 bg-black/50 flex items-center justify-center z-50";
-  overlay.onclick = (e) => {
-    if (e.target === overlay) overlay.remove();
-  };
-  overlay.innerHTML = `
-  <div class="bg-white shadow-2xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto p-6" style="border-radius:var(--md-radius-xl)">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold font-display" style="color:var(--md-on-surface)">How CivicLens Works</h2>
-      <button onclick="document.getElementById('how-it-works-overlay').remove()" class="text-xl leading-none" style="color:var(--md-outline)">&times;</button>
+  const page = document.getElementById("how-it-works-page");
+  const mainContent = document.querySelector("main.main-with-sidenav");
+  if (!page) return;
+
+  if (mainContent) mainContent.style.display = "none";
+  page.style.display = "flex";
+
+  // Highlight sidebar item
+  document.querySelectorAll(".side-nav-item").forEach((b) => b.classList.remove("active"));
+  const hiwBtn = document.getElementById("hiw-nav-btn");
+  if (hiwBtn) hiwBtn.classList.add("active");
+
+  page.innerHTML = `
+  <div style="max-width:960px;width:100%;margin:0 auto;padding:2rem 1.5rem 4rem;">
+    <button onclick="window.closeHowItWorks()" class="flex items-center gap-1.5 mb-6 text-sm font-medium transition hover:opacity-80" style="color:var(--md-secondary)">
+      <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span> Back to Dashboard
+    </button>
+
+    <div class="mb-8">
+      <h1 class="text-2xl font-extrabold font-display mb-2" style="color:var(--md-on-surface)">
+        <span class="material-symbols-outlined align-middle mr-1" style="font-size:28px;color:var(--md-secondary)">rocket_launch</span>
+        How CivicLens Works
+      </h1>
+      <p class="text-sm max-w-lg" style="color:var(--md-on-surface-variant)">From your report to a resolved issue &mdash; AI powers every step of the process.</p>
     </div>
-    <div class="space-y-4 text-sm" style="color:var(--md-on-surface-variant)">
-      <div class="rounded-xl p-4" style="background:#e6f5f3">
-        <h3 class="font-bold mb-1" style="color:var(--md-secondary)">${CivicIcons.target("w-4 h-4 inline")} Stage 1 â€” Intent Classification</h3>
-        <p>Your message is analyzed by GPT-4o-mini to determine intent (report issue, check status, safety analysis, etc.) and extract filters like zone, severity, and street names.</p>
+
+    <div class="hiw-steps grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, var(--md-secondary), #004d47);">01</div>
+          <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Report</h4>
+        </div>
+        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Residents submit infrastructure issues via the AI chat, service portal, or interactive map.</p>
+        <div class="hiw-icon mt-3 flex justify-center">
+          <span class="material-symbols-outlined" style="font-size:32px;color:var(--md-secondary);opacity:0.25">edit_note</span>
+        </div>
       </div>
-      <div class="bg-blue-50 rounded-xl p-4">
-        <h3 class="font-bold text-blue-800 mb-1">${CivicIcons.chart("w-4 h-4 inline")} Stage 2 â€” ReAct Data Agent (MCP)</h3>
-        <p>A ReAct-style agent reasons step-by-step, selecting from <strong>14 MCP tools</strong> (potholes, sidewalks, schools, work orders, forecasting, cost-of-inaction, what-if budget). The agent loops up to 5 iterations, calling tools and reflecting on results until the query is fully answered.</p>
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, var(--md-tertiary), #1d4ed8);">02</div>
+          <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Analyze</h4>
+        </div>
+        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">AI agents classify intent, pull data from 14 MCP tools, and score urgency using Weibull survival models.</p>
+        <div class="hiw-icon mt-3 flex justify-center">
+          <span class="material-symbols-outlined" style="font-size:32px;color:var(--md-tertiary);opacity:0.25">psychology</span>
+        </div>
       </div>
-      <div class="bg-purple-50 rounded-xl p-4">
-        <h3 class="font-bold text-purple-800 mb-1">${CivicIcons.brain("w-4 h-4 inline")} Stage 3 â€” RAG Synthesis</h3>
-        <p>GPT-4o-mini generates a narrative grounded in a <strong>11-document knowledge base</strong> using dual retrieval (dense embeddings + TF-IDF fallback). Inline citations [1], [2] reference specific policy documents.</p>
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, #f59e0b, #d97706);">03</div>
+          <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Visualize</h4>
+        </div>
+        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Issues appear on a live interactive map with neighborhood grades, heatmaps, and RAG-powered insights.</p>
+        <div class="hiw-icon mt-3 flex justify-center">
+          <span class="material-symbols-outlined" style="font-size:32px;color:#f59e0b;opacity:0.25">map</span>
+        </div>
       </div>
-      <div class="bg-green-50 rounded-xl p-4">
-        <h3 class="font-bold text-green-800 mb-1">${CivicIcons.fileText("w-4 h-4 inline")} Stage 4 â€” Report Formatting &amp; RAI</h3>
-        <p>The report is formatted with evidence-based coverage scoring. <strong>Responsible AI</strong> checks enforce fairness (no neighborhood-based bias), transparency (full data pipeline trace), and privacy (no PII in outputs).</p>
-      </div>
-      <div class="bg-amber-50 rounded-xl p-4">
-        <h3 class="font-bold text-amber-800 mb-1">${CivicIcons.trendUp("w-4 h-4 inline")} Weibull Survival Model</h3>
-        <p>Infrastructure priority scores use a <strong>Weibull survival analysis</strong> model â€” the same math used in industrial reliability engineering â€” to predict deterioration rates, expected failure dates, and cost-of-inaction estimates.</p>
-      </div>
-      <div class="rounded-xl p-4" style="background:var(--md-surface-container)">
-        <h3 class="font-bold mb-1" style="color:var(--md-on-surface)">${CivicIcons.shield("w-4 h-4 inline")} Security &amp; Guardrails</h3>
-        <p>Rate limiting (60 req/min), input sanitization, RBAC (public vs supervisor roles), human-in-the-loop action confirmation, and comprehensive security headers protect the platform.</p>
+      <div class="hiw-step group relative p-5 bg-white border shadow-sm transition-all cursor-default" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="hiw-num w-9 h-9 rounded-xl flex items-center justify-center text-sm font-extrabold text-white font-display" style="background:linear-gradient(135deg, #22c55e, #16a34a);">04</div>
+          <h4 class="text-sm font-bold font-display" style="color:var(--md-on-surface)">Resolve</h4>
+        </div>
+        <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Staff receive prioritized work orders, AI-drafted responses, and cost-of-inaction projections to act fast.</p>
+        <div class="hiw-icon mt-3 flex justify-center">
+          <span class="material-symbols-outlined" style="font-size:32px;color:#22c55e;opacity:0.25">task_alt</span>
+        </div>
       </div>
     </div>
-    <div class="mt-4 pt-4 text-xs text-center" style="border-top:1px solid var(--md-outline-variant);color:var(--md-outline)">
-      Built with Node.js &middot; GitHub Models (GPT-4o-mini) &middot; MCP Protocol &middot; LangChain &middot; FAISS
+    <div class="hidden lg:flex items-center justify-between mt-[-68px] mb-10 mx-12 pointer-events-none" style="z-index:0;position:relative">
+      <div class="flex-1 h-0.5 mx-2" style="background:linear-gradient(90deg, var(--md-secondary), var(--md-tertiary))"></div>
+      <div class="flex-1 h-0.5 mx-2" style="background:linear-gradient(90deg, var(--md-tertiary), #f59e0b)"></div>
+      <div class="flex-1 h-0.5 mx-2" style="background:linear-gradient(90deg, #f59e0b, #22c55e)"></div>
+    </div>
+
+    <div class="mb-8">
+      <h2 class="text-lg font-bold font-display mb-1 flex items-center gap-2" style="color:var(--md-on-surface)">
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-tertiary)">memory</span>
+        Under the Hood
+      </h2>
+      <p class="text-xs mb-4" style="color:var(--md-on-surface-variant)">The AI pipeline stages that power every interaction.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-white border shadow-sm rounded-xl p-4" style="border-color:var(--md-outline-variant);background:#e6f5f3">
+          <h3 class="text-sm font-bold mb-1" style="color:var(--md-secondary)">${CivicIcons.target("w-4 h-4 inline")} Intent Classification</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Your message is analyzed by GPT-4o-mini to determine intent and extract filters like zone, severity, and street names.</p>
+        </div>
+        <div class="bg-blue-50 border shadow-sm rounded-xl p-4" style="border-color:var(--md-outline-variant)">
+          <h3 class="text-sm font-bold text-blue-800 mb-1">${CivicIcons.chart("w-4 h-4 inline")} ReAct Data Agent (MCP)</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">A ReAct-style agent reasons step-by-step, selecting from <strong>14 MCP tools</strong>. The agent loops up to 5 iterations, calling tools and reflecting on results.</p>
+        </div>
+        <div class="bg-purple-50 border shadow-sm rounded-xl p-4" style="border-color:var(--md-outline-variant)">
+          <h3 class="text-sm font-bold text-purple-800 mb-1">${CivicIcons.brain("w-4 h-4 inline")} RAG Synthesis</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">GPT-4o-mini generates a narrative grounded in an <strong>11-document knowledge base</strong> using dual retrieval (dense embeddings + TF-IDF fallback).</p>
+        </div>
+        <div class="bg-green-50 border shadow-sm rounded-xl p-4" style="border-color:var(--md-outline-variant)">
+          <h3 class="text-sm font-bold text-green-800 mb-1">${CivicIcons.fileText("w-4 h-4 inline")} Report Formatting &amp; RAI</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Evidence-based coverage scoring with <strong>Responsible AI</strong> checks for fairness, transparency, and privacy.</p>
+        </div>
+        <div class="bg-amber-50 border shadow-sm rounded-xl p-4" style="border-color:var(--md-outline-variant)">
+          <h3 class="text-sm font-bold text-amber-800 mb-1">${CivicIcons.trendUp("w-4 h-4 inline")} Weibull Survival Model</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Same math used in industrial reliability engineering to predict deterioration rates, failure dates, and cost-of-inaction estimates.</p>
+        </div>
+        <div class="border shadow-sm rounded-xl p-4" style="border-color:var(--md-outline-variant);background:var(--md-surface-container)">
+          <h3 class="text-sm font-bold mb-1" style="color:var(--md-on-surface)">${CivicIcons.shield("w-4 h-4 inline")} Security &amp; Guardrails</h3>
+          <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Rate limiting, input sanitization, RBAC, human-in-the-loop confirmation, and comprehensive security headers.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <h2 class="text-lg font-bold font-display mb-1 flex items-center gap-2" style="color:var(--md-on-surface)">
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--md-tertiary)">groups</span>
+        Built for Real Problems
+      </h2>
+      <p class="text-xs mb-4" style="color:var(--md-on-surface-variant)">Every feature is designed around the pain points real communities face every day.</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="use-case-card group relative overflow-hidden p-5 bg-white border shadow-sm transition-all" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+          <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-[0.06] pointer-events-none" style="background:var(--md-secondary);transform:translate(30%,-30%)"></div>
+          <div class="relative z-10">
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center mb-3 shadow-sm" style="background:linear-gradient(135deg, var(--md-secondary), #004d47);">
+              <span class="material-symbols-outlined text-white" style="font-size:22px">person</span>
+            </div>
+            <h4 class="text-sm font-bold font-display mb-1" style="color:var(--md-on-surface)">The Frustrated Resident</h4>
+            <p class="text-xs italic mb-3" style="color:var(--md-outline)">"I reported a pothole 3 months ago. Nobody responded."</p>
+            <div class="pt-3 border-t" style="border-color:var(--md-surface-container)">
+              <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">AI confirms receipt instantly, tracks progress in real-time, and sends proactive updates so you're never left wondering.</p>
+            </div>
+          </div>
+        </div>
+        <div class="use-case-card group relative overflow-hidden p-5 bg-white border shadow-sm transition-all" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+          <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-[0.06] pointer-events-none" style="background:var(--md-tertiary);transform:translate(30%,-30%)"></div>
+          <div class="relative z-10">
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center mb-3 shadow-sm" style="background:linear-gradient(135deg, var(--md-tertiary), #1d4ed8);">
+              <span class="material-symbols-outlined text-white" style="font-size:22px">engineering</span>
+            </div>
+            <h4 class="text-sm font-bold font-display mb-1" style="color:var(--md-on-surface)">The Overwhelmed City Staff</h4>
+            <p class="text-xs italic mb-3" style="color:var(--md-outline)">"200+ open tickets, no way to know which ones matter most."</p>
+            <div class="pt-3 border-t" style="border-color:var(--md-surface-container)">
+              <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Weibull models rank urgency by cost-of-delay. AI-drafted work orders and auto-prioritized queues cut triage time by 80%.</p>
+            </div>
+          </div>
+        </div>
+        <div class="use-case-card group relative overflow-hidden p-5 bg-white border shadow-sm transition-all" style="border-color:var(--md-outline-variant);border-radius:var(--md-radius-lg)">
+          <div class="absolute top-0 right-0 w-24 h-24 rounded-full opacity-[0.06] pointer-events-none" style="background:#f59e0b;transform:translate(30%,-30%)"></div>
+          <div class="relative z-10">
+            <div class="w-11 h-11 rounded-2xl flex items-center justify-center mb-3 shadow-sm" style="background:linear-gradient(135deg, #f59e0b, #d97706);">
+              <span class="material-symbols-outlined text-white" style="font-size:22px">account_balance</span>
+            </div>
+            <h4 class="text-sm font-bold font-display mb-1" style="color:var(--md-on-surface)">The Budget-Conscious City Manager</h4>
+            <p class="text-xs italic mb-3" style="color:var(--md-outline)">"A $400 pothole became a $45,000 settlement."</p>
+            <div class="pt-3 border-t" style="border-color:var(--md-surface-container)">
+              <p class="text-xs leading-relaxed" style="color:var(--md-on-surface-variant)">Survival analysis forecasts liability risk. Cost-of-inaction dashboards make the business case for proactive repair.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center pt-4 border-t" style="border-color:var(--md-outline-variant)">
+      <p class="text-xs" style="color:var(--md-outline)">Built with Node.js &middot; GitHub Models (GPT-4o-mini) &middot; MCP Protocol &middot; LangChain &middot; FAISS</p>
     </div>
   </div>`;
-  document.body.appendChild(overlay);
+};
+
+window.closeHowItWorks = function () {
+  const page = document.getElementById("how-it-works-page");
+  const mainContent = document.querySelector("main.main-with-sidenav");
+  if (page) page.style.display = "none";
+  if (mainContent) mainContent.style.display = "";
+  document.querySelectorAll(".side-nav-item").forEach((b) => b.classList.remove("active"));
+  const homeBtn = document.querySelector('.side-nav-item[data-nav="home"]');
+  if (homeBtn) homeBtn.classList.add("active");
 };
 
 // â”€â”€ Report Inaccuracy â”€â”€

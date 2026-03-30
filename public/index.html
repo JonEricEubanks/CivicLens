@@ -1284,6 +1284,61 @@
       .dash-reveal:nth-child(7) {
         animation-delay: 0.48s;
       }
+      .dash-reveal:nth-child(8) {
+        animation-delay: 0.56s;
+      }
+      .dash-reveal:nth-child(9) {
+        animation-delay: 0.64s;
+      }
+      .dash-reveal:nth-child(10) {
+        animation-delay: 0.72s;
+      }
+
+      /* ── How It Works Steps ── */
+      .hiw-step {
+        position: relative;
+        overflow: hidden;
+        background: var(--md-surface);
+      }
+      .hiw-step::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, var(--md-secondary), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: inherit;
+      }
+      .hiw-step:hover::before {
+        opacity: 0.04;
+      }
+      .hiw-step:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px var(--md-shadow);
+        border-color: var(--md-secondary) !important;
+      }
+      .hiw-step:hover .hiw-icon .material-symbols-outlined {
+        opacity: 0.45 !important;
+        transform: scale(1.1);
+        transition: all 0.3s ease;
+      }
+      .hiw-num {
+        transition: transform 0.3s ease;
+      }
+      .hiw-step:hover .hiw-num {
+        transform: scale(1.1);
+      }
+
+      /* ── Use Case Cards ── */
+      .use-case-card {
+        background: var(--md-surface);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .use-case-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px var(--md-shadow);
+      }
+
       .hero-blob {
         position: absolute;
         border-radius: 50%;
@@ -1348,6 +1403,24 @@
         .pulse-stat .text-xs {
           font-size: 0.625rem !important;
         }
+
+        /* Compact How It Works steps */
+        .hiw-steps {
+          grid-template-columns: 1fr !important;
+          gap: 0.75rem !important;
+        }
+        .hiw-step {
+          padding: 0.75rem !important;
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: flex-start !important;
+          gap: 0.75rem;
+        }
+        .hiw-step .hiw-icon { display: none !important; }
+        .hiw-step .flex.items-center.gap-3 { margin-bottom: 0.25rem !important; }
+
+        /* Compact use-case cards */
+        .use-case-card { padding: 0.875rem !important; }
 
         /* Compact neighborhood grade cards */
         .neighborhood-card {
@@ -2209,10 +2282,12 @@
       </button>
       <button
         class="side-nav-item ripple-container"
+        id="hiw-nav-btn"
+        data-nav="how-it-works"
         data-tooltip="How It Works"
-        onclick="window.showHowItWorks?.()"
+        onclick="sideNavTo(this, 'how-it-works')"
       >
-        <span class="material-symbols-outlined">help</span>
+        <span class="material-symbols-outlined">rocket_launch</span>
         <span class="nav-label">How It Works</span>
       </button>
     </nav>
@@ -2402,6 +2477,11 @@
     <!-- Staff Operations Full-Page View       -->
     <!-- ══════════════════════════════════════ -->
     <div id="staff-ops-page" style="display:none;position:fixed;inset:0;z-index:50;flex-direction:column;height:100vh;background:#f8fafc;overflow:hidden;"></div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- How It Works Full-Page View           -->
+    <!-- ══════════════════════════════════════ -->
+    <div id="how-it-works-page" style="display:none;position:fixed;inset:0;z-index:50;flex-direction:column;height:100vh;background:var(--md-surface, #f8fafc);overflow-y:auto;"></div>
 
     <!-- ══════════════════════════════════════ -->
     <!-- Floating Chat Widget                  -->
