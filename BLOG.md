@@ -91,11 +91,9 @@ CivicLens uses **real municipal reference data**: actual Lake Forest School Dist
 
 ## How GitHub Copilot Built This
 
-Built entirely with **GitHub Copilot Agent Mode** (Claude). Midway through, I prompted Copilot to act as a critical reviewer — it scored the project 4.94/10 and found I was displaying fabricated LLM "confidence" numbers. The fix: evidence-based data coverage metrics.
+From a 28-item improvement list, Copilot helped me refactor the data agent from a switch/case pattern into a React loop, add conversation memory, strengthen security, implement predictive forecasting, write 14 test suites, and set up CI—within a single session.
 
-From a 28-item improvement list, Copilot rewrote the data agent from switch/case to a ReAct loop, added conversation memory, implemented security hardening, built predictive forecasting, wrote 14 test suites, and set up CI — in one session.
-
-**Key lesson:** Critique before polish. Getting a harsh review first prevented sunk-cost bias on features that weren't scoring well.
+Key lesson: use AI to review AI. Copilot caught blind spots I would’ve likely missed in manual testing, and the project ended up stronger because of it.
 
 ---
 
